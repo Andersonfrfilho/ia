@@ -228,6 +228,15 @@ Todo projeto dentro do monorepo deve obrigatoriamente manter documentações atu
 
 ---
 
+## 14. 🛡️ Auditoria Final (Go-Live: Segurança & Performance)
+
+É estritamente obrigatório que a I.A. ou o desenvolvedor, **ao final da implementação de qualquer projeto ou funcionalidade**, execute uma auditoria proativa:
+
+- **Auditoria de Performance:** Validar queries N+1, certificar que todo I/O é assíncrono (não bloqueante) e verificar o uso correto de estruturas otimizadas (`Sets`, `Maps` vs `Arrays`).
+- **Auditoria de Segurança:** Revisar a higienização de logs (sem PII), garantir o tratamento rigoroso de inputs na entrada das rotas e confirmar que não há vazamento de Stack Traces HTTP 500 para o cliente.
+
+---
+
 ## 16. Extração de Strings Repetidas em Constantes e Fábricas de Configuração
 
 Toda string literal que aparecer **2 ou mais vezes** no codebase — seja como valor de variável, argumento de função, chave de objeto ou condicional — deve ser extraída para uma constante nomeada (`SCREAMING_SNAKE_CASE`) no arquivo `*.constant.ts` do escopo mais próximo.
@@ -242,11 +251,11 @@ Toda string literal que aparecer **2 ou mais vezes** no codebase — seja como v
 
 ### 📐 Regra de Escopo da Constante
 
-| Repetição ocorre em... | Onde declarar |
-|---|---|
-| Dentro de um único módulo | `src/modules/<Modulo>/shared/<Modulo>.constant.ts` |
-| Entre módulos da mesma aplicação | `src/modules/shared/shared.constant.ts` |
-| Entre aplicações do monorepo | `packages/<ContextoProvider>/<Contexto>.constant.ts` |
+| Repetição ocorre em...           | Onde declarar                                        |
+| --------------------------------- | ---------------------------------------------------- |
+| Dentro de um único módulo        | `src/modules/<Modulo>/shared/<Modulo>.constant.ts`   |
+| Entre módulos da mesma aplicação | `src/modules/shared/shared.constant.ts`              |
+| Entre aplicações do monorepo     | `packages/<ContextoProvider>/<Contexto>.constant.ts` |
 
 ### 📐 Fábricas de Configuração Pré-existentes
 
@@ -255,22 +264,22 @@ Quando uma estrutura de configuração se repete em múltiplos pontos (ex: opç�
 ```ts
 // shared/Log.constant.ts
 export const LOG_LEVEL = {
-  INFO: 'info',
-  ERROR: 'error',
-  WARN: 'warn',
-  DEBUG: 'debug',
+  INFO: "info",
+  ERROR: "error",
+  WARN: "warn",
+  DEBUG: "debug",
 } as const;
 export type LogLevel = (typeof LOG_LEVEL)[keyof typeof LOG_LEVEL];
 
 // shared/RabbitMq.constant.ts
 export const RABBITMQ_EXCHANGE = {
-  ORDER_EVENTS: 'order.events',
-  PAYMENT_EVENTS: 'payment.events',
+  ORDER_EVENTS: "order.events",
+  PAYMENT_EVENTS: "payment.events",
 } as const;
 
 export const RABBITMQ_QUEUE = {
-  PROCESS_PAYMENT: 'payment.process',
-  SEND_EMAIL: 'notification.email',
+  PROCESS_PAYMENT: "payment.process",
+  SEND_EMAIL: "notification.email",
 } as const;
 
 // shared/RabbitMqChannel.factory.ts
@@ -281,21 +290,22 @@ export function buildChannelOptions(prefetchCount: number) {
 
 ```ts
 // ❌ Errado — literal espalhado em 3 lugares diferentes
-logger.log('info', 'Pedido criado');
-logger.log('info', 'Pagamento aprovado');
-if (level === 'error') notifyOncall();
+logger.log("info", "Pedido criado");
+logger.log("info", "Pagamento aprovado");
+if (level === "error") notifyOncall();
 
 // ✅ Correto — centralizado e tipado
-import { LOG_LEVEL } from '@/modules/shared/Log.constant';
+import { LOG_LEVEL } from "@/modules/shared/Log.constant";
 
-logger.log(LOG_LEVEL.INFO, 'Pedido criado');
-logger.log(LOG_LEVEL.INFO, 'Pagamento aprovado');
+logger.log(LOG_LEVEL.INFO, "Pedido criado");
+logger.log(LOG_LEVEL.INFO, "Pagamento aprovado");
 if (level === LOG_LEVEL.ERROR) notifyOncall();
 ```
 
 ### 📐 Critério de Decisão para a I.A.
 
 Ao gerar ou revisar código, a I.A. deve:
+
 1. Varrer o escopo atual em busca de strings idênticas ou semanticamente equivalentes já existentes
 2. Se encontrar 2+ ocorrências — **parar e extrair** antes de continuar
 3. Se a constante já existe em outro módulo — **importar, nunca redeclarar**
@@ -303,17 +313,6 @@ Ao gerar ou revisar código, a I.A. deve:
 
 ---
 
-## 14. 🛡️ Auditoria Final (Go-Live: Segurança & Performance)
+## 17. Copyright e Licenciamento de Arquivos-Fonte
 
-É estritamente obrigatório que a I.A. ou o desenvolvedor, **ao final da implementação de qualquer projeto ou funcionalidade**, execute uma auditoria proativa:
-
-- **Auditoria de Performance:** Validar queries N+1, certificar que todo I/O é assíncrono (não bloqueante) e verificar o uso correto de estruturas otimizadas (`Sets`, `Maps` vs `Arrays`).
-- **Auditoria de Segurança:** Revisar a higienização de logs (sem PII), garantir o tratamento rigoroso de inputs na entrada das rotas e confirmar que não há vazamento de Stack Traces HTTP 500 para o cliente.
-
-### Adicionar copyright e licença de uso no topo de todos os arquivos de código-fonte, incluindo o nome do autor, ano e tipo de licença (ex: MIT, Apache 2.0).
-
-e da minha empresa AdA technology com o logo da empresa. A licença de uso deve ser clara e visível, garantindo que qualquer pessoa que utilize ou modifique o código esteja ciente dos termos de uso e distribuição.
-/Users/anderson.filho/.claude/rules/Gemini_Generated_Image_6sr7qs6sr7qs6sr7 (1).png
-/Users/anderson.filho/.claude/rules/WhatsApp Image 2026-06-13 at 17.12.35 (1).jpeg
-/Users/anderson.filho/.claude/rules/WhatsApp Image 2026-06-13 at 17.12.35.jpeg
-verifique se esta adequado os existente se não adpte para o caso
+Todo arquivo de código-fonte deve conter, no topo, um cabeçalho de copyright indicando autor, ano e tipo de licença (ex: MIT, Apache 2.0), além da identificação da empresa **Ada Technology** (ver `ada-branding.md` para o padrão visual do logo). Os termos de uso e distribuição devem ficar claros e visíveis para qualquer pessoa que utilize ou modifique o código.

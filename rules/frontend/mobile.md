@@ -103,7 +103,20 @@ No mobile, gargalos de performance causam travamentos na interface, queda de FPS
 
 ---
 
-## 8. 🛡️ Segurança e Armazenamento (Auditoria Crítica)
+## 8. 📊 Padrão Obrigatório para Listagens Tabulares (Data Tables Mobile)
+
+Quando uma tela mobile precisar exibir dados em formato tabular/grid (ex: extratos, relatórios administrativos dentro do app), a `FlatList`/`FlashList` deve seguir o mesmo padrão mínimo de usabilidade definido para a Web (ver `web.md`, seção 7), adaptado às interações nativas:
+
+- **Ordenação:** Cabeçalho fixo (sticky header) com toque para alternar `asc` / `desc` / neutro por coluna, com indicador visual da direção ativa.
+- **Filtros com Seleção Múltipla:** Filtros exibidos em um bottom sheet ou modal dedicado, suportando seleção múltipla de valores por campo.
+- **Seleção e Ação em Massa:** Modo de seleção ativado por long-press no item, com checkbox por linha, opção "selecionar todos" e barra de ações em lote fixada na parte inferior da tela.
+- **Botão "Limpar Filtros":** Visível no cabeçalho do modal/bottom sheet de filtros, resetando todos os filtros e ordenações de uma vez, somente quando há algo aplicado.
+- **Linhas Zebradas:** Itens da lista devem alternar cor de fundo par/ímpar via `getItemLayout`/estilo do item, nunca com estilo inline recalculado a cada render.
+- **Contrato com o BFF:** Os mesmos parâmetros de ordenação, filtros multi-valor e paginação usados na Web (`sortBy`, `sortDirection`, `filters[]`) devem ser reaproveitados nas `*.query.ts` do mobile — nunca reinventados por plataforma.
+
+---
+
+## 9. 🛡️ Segurança e Armazenamento (Auditoria Crítica)
 
 - **Armazenamento de Dados Sensíveis:** O `AsyncStorage` escreve dados em texto plano (desprotegido). É **terminantemente proibido** salvar JWT Tokens, credenciais ou PII em `AsyncStorage`.
 - **Keychain / Keystore:** Para qualquer dado sensível, o Provider de Storage local deve utilizar bibliotecas integradas com a segurança nativa do aparelho (ex: `react-native-keychain` ou `react-native-encrypted-storage`).

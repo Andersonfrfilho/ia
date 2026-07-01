@@ -106,7 +106,21 @@ A aplicação deve nascer preparada para multi-idiomas. É **estritamente proibi
 
 ---
 
-## 7. 🛡️ Auditoria Final Frontend (Performance & Segurança)
+## 7. 📊 Padrão Obrigatório para Tabelas e Listagens (Data Tables)
+
+Toda tela que renderize dados tabulares (listagens, grids administrativos, relatórios) deve seguir um padrão mínimo de usabilidade, independente do domínio de negócio.
+
+- **Ordenação por Cabeçalho:** Todas as colunas ordenáveis devem expor um cabeçalho clicável, alternando entre `asc` / `desc` / estado neutro, com indicador visual da direção ativa.
+- **Filtros com Seleção Múltipla:** Filtros de coluna ou de barra superior devem suportar seleção múltipla (multi-select) de valores, não apenas um valor único por vez.
+- **Seleção e Ação em Massa:** A primeira coluna deve conter checkbox por linha e um checkbox "selecionar todos" no cabeçalho, habilitando uma barra de ações em lote (ex: editar, excluir, exportar) somente quando houver itens selecionados.
+- **Botão "Limpar Filtros":** Deve existir um botão visível para resetar todos os filtros e ordenações ativas de uma vez, aparecendo apenas quando há algum filtro/ordenação aplicado.
+- **Estado na URL:** Ordenação, filtros e paginação devem ser refletidos como query params, permitindo compartilhar/recarregar a URL sem perder o estado da listagem.
+- **Contrato com o BFF:** Os parâmetros de ordenação (`sortBy`, `sortDirection`), filtros multi-valor (`filters[]`) e paginação devem ser definidos e documentados no contrato do BFF (ver `bff.md`), nunca inferidos ou tratados apenas no cliente quando a base de dados for grande.
+- **Linhas Zebradas:** Todas as tabelas devem aplicar zebra striping (cores alternadas entre linhas pares e ímpares) para facilitar a leitura horizontal, via CSS Modules ou classes utilitárias — nunca com estilo inline.
+
+---
+
+## 8. 🛡️ Auditoria Final Frontend (Performance & Segurança)
 
 Ao final de qualquer implementação ou refatoração no Frontend Web, a I.A. ou o desenvolvedor deve realizar uma auditoria rigorosa antes do commit.
 

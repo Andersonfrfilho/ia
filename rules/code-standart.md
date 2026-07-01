@@ -121,6 +121,9 @@ Todas as variáveis de ambiente devem ser centralizadas e segregadas em arquivos
 
 A raiz do projeto deve conter um arquivo `Makefile` documentado e utilizando emojis para identificação visual rápida, abstraindo comandos complexos (ex: `make up`, `make test-unit`).
 
+- **`PROJECT_NAME` Obrigatório por Ambiente:** O `Makefile` deve declarar uma variável `PROJECT_NAME` (lida do respectivo `env.<ambiente>`, ex: `envs/env.dev`) e propagá-la para todo recurso criado — nome do projeto do Docker Compose (`docker compose -p $(PROJECT_NAME)-$(ENV)`), containers, volumes, networks e filas/exchanges de teste. Isso evita colisão de recursos quando múltiplos ambientes (`dev`, `test`, `test.e2e`) rodam na mesma máquina simultaneamente.
+- **Nomenclatura Derivada:** Todo recurso nomeado no Makefile deve seguir o padrão `$(PROJECT_NAME)-$(ENV)-<recurso>` (ex: `minha-api-dev-postgres`, `minha-api-test-rabbitmq`), nunca nomes fixos sem o prefixo do projeto/ambiente.
+
 ---
 
 ## 5. Seeders Baseados em Casos de Uso

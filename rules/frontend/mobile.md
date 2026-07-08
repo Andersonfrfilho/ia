@@ -121,3 +121,81 @@ Quando uma tela mobile precisar exibir dados em formato tabular/grid (ex: extrat
 - **Armazenamento de Dados Sensíveis:** O `AsyncStorage` escreve dados em texto plano (desprotegido). É **terminantemente proibido** salvar JWT Tokens, credenciais ou PII em `AsyncStorage`.
 - **Keychain / Keystore:** Para qualquer dado sensível, o Provider de Storage local deve utilizar bibliotecas integradas com a segurança nativa do aparelho (ex: `react-native-keychain` ou `react-native-encrypted-storage`).
 - **Logs e Depuração:** Garantir que o log de eventos e transições (formato de rastreio) não vaze informações pessoais em ambientes de release/produção.
+
+---
+
+## 10. 🎨 Design System, Temas e Escalas (Design Tokens Obrigatórias)
+
+Toda aplicação mobile deve obrigatoriamente consumir valores visuais de um sistema de **Design Tokens** centralizado. É **estritamente proibido** utilizar valores arbitrários (hardcoded) para cores, espaçamentos, tamanhos de fonte, bordas ou sombras diretamente em componentes ou estilos.
+
+### 📐 Arquivo de Temas
+
+```text
+src/modules/shared/theme/
+├── theme.constant.ts    ← Cores, tipografia, bordas, sombras
+├── spacing.constant.ts  ← Escala de espaçamento (grid base 4px)
+└── scale.util.ts        ← Função scale() para valores dinâmicos
+```
+
+### 🎯 Cores — Tokens Semânticos (NUNCA hardcode)
+
+```ts
+export const COLORS = {
+  primary:   { 50: '#eff6ff', 500: '#3b82f6', 900: '#1e3a5f' },
+  neutral:   { 0: '#ffffff', 100: '#f3f4f6', 900: '#111827' },
+  semantic:  { success: '#16a34a', error: '#dc2626', warning: '#f59e0b' },
+} as const
+```
+
+### 📏 Escala de Espaçamento — Grade Base 4px
+
+```ts
+export const SPACING = {
+  0: 0, 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64,
+  scale: (factor: number) => factor * 4,
+} as const
+```
+
+### 📐 Função `scale()`
+
+```ts
+export function scale(factor: number): number { return factor * 4 }
+export function scaleRem(factor: number): string { return `${(factor * 4) / 16}rem` }
+```
+
+### 🔤 Escala Tipográfica
+
+```ts
+export const TYPOGRAPHY = {
+  size: { xs: 12, sm: 14, base: 16, lg: 18, xl: 20, '2xl': 24, '3xl': 30 },
+  weight: { normal: '400', medium: '500', semibold: '600', bold: '700' },
+} as const
+```
+
+### 📐 Bordas e Sombras
+
+```ts
+export const RADIUS = { sm: 4, md: 8, lg: 12, xl: 16, full: 9999 } as const
+export const SHADOW = {
+  sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+  md: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+  lg: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+} as const
+```
+
+### ✅ Regras de Uso (Inquebráveis)
+
+| Situação | ❌ Proibido | ✅ Correto |
+|----------|------------|-----------|
+| Cor | `color: '#d9fdd3'` | `color: COLORS.primary[50]` |
+| Padding | `padding: 12` | `padding: SPACING.scale(3)` |
+| Fonte | `fontSize: 14.5` | `fontSize: TYPOGRAPHY.size.sm` |
+| Margem | `margin: 6` | `margin: SPACING.scale(1.5)` |
+| Borda | `borderRadius: 16` | `borderRadius: RADIUS.xl` |
+| Calculado | `minHeight: 120` | `scale(30)` |
+| Sombra | `elevation: 4` | `boxShadow: SHADOW.md` |
+| Gap | `gap: 1.5` | `gap: SPACING.scale(1.5)` |
+
+### 🚨 Penalidade
+
+Código que contenha **valores arbitrários hardcoded** será **rejeitado em code review**. Toda constante visual deve vir dos arquivos de tema.

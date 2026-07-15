@@ -141,7 +141,71 @@ A raiz do projeto deve conter um arquivo `Makefile` documentado e utilizando emo
 
 ## 7. Tratamento de Exceções, Erros e Validações
 
-- **Erros Semânticos e Customizados:** Toda falha deve estender uma `BaseError`, carregar um código de rastreio exclusivo e, em cenários de validação, expor um array contendo os campos, as regras violadas e parâmetros contextuais informados.
+### Códigos de Erro Centralizados
+
+Todos os códigos de erro são centralizados em `shared/errors/codes.ts`, organizados por domínio:
+
+```typescript
+// Auth
+export const AUTH_INVALID_CREDENTIALS = 'AUTH_INVALID_CREDENTIALS'
+export const AUTH_TOKEN_EXPIRED = 'AUTH_TOKEN_EXPIRED'
+
+// WhatsApp
+export const WHATSAPP_WINDOW_EXPIRED = 'WHATSAPP_WINDOW_EXPIRED'
+export const WHATSAPP_CONFIG_MISSING = 'WHATSAPP_CONFIG_MISSING'
+```
+
+### Classes de Erro por Domínio
+
+Cada domínio tem sua própria hierarquia de classes estendendo `DomainError` (que estende `AppError`):
+
+```typescript
+// Classe base do domínio
+export class WhatsAppError extends DomainError { ... }
+
+// Erros específicos
+export class WhatsAppWindowExpiredError extends WhatsAppError {
+  constructor(message?: string, public readonly hoursSinceLastMessage?: number) { ... }
+}
+```
+
+### Uso Correto
+
+```typescript
+// ✅ Correto — usar classe específica do domínio
+throw new WhatsAppWindowExpiredError()
+throw new AuthInvalidCredentialsError()
+
+// ❌ Errado — nunca usar AppError diretamente
+throw new AppError('Erro genérico', 500, 'GENERIC_ERROR')
+
+// Catch com instanceof (type-safe)
+try { ... }
+catch (e) {
+  if (e instanceof WhatsAppWindowExpiredError) {
+    // e.hoursSinceLastMessage está disponível
+  }
+  if (e instanceof AuthInvalidCredentialsError) {
+    // tratar falha de login
+  }
+}
+```
+
+### Regras
+
+1. **Nunca use `new AppError(...)` diretamente** — use a classe de erro específica do domínio
+2. **Códigos de erro devem estar em `codes.ts`** — sem códigos string inline
+3. **Erros de domínio podem carregar contexto** — ex: `WhatsAppWindowExpiredError` carrega `hoursSinceLastMessage`
+4. **Sem try/catch genérico nos use cases** — erros propagam para o controller/middleware de erros
+5. **Frontend usa `getApiErrorCode()`** — para filtrar/tratar erros por código
+
+### Módulos de Erro Disponíveis
+
+| Módulo | Arquivo | Exemplos |
+|--------|---------|----------|
+| Auth | `AuthErrors.ts` | `AuthInvalidCredentialsError`, `AuthTokenExpiredError` |
+| WhatsApp | `WhatsAppErrors.ts` | `WhatsAppWindowExpiredError`, `WhatsAppConfigMissingError` |
+| Uploads | `UploadErrors.ts` | `UploadNotFoundError`, `UploadInvalidTypeError` |
 
 ---
 

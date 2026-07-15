@@ -207,6 +207,83 @@ catch (e) {
 | WhatsApp | `WhatsAppErrors.ts` | `WhatsAppWindowExpiredError`, `WhatsAppConfigMissingError` |
 | Uploads | `UploadErrors.ts` | `UploadNotFoundError`, `UploadInvalidTypeError` |
 
+### Exception Filter Global
+
+O projeto utiliza um **Exception Filter global** no Router (`src/infra/http/router.ts`) que captura todos os erros não tratados nos handlers:
+
+```typescript
+// Router catch-all (equivalente ao @Catch() do NestJS)
+catch (error) {
+  if (error instanceof AppError) {
+    log.info(LOG_EVENTS.RESPONSE_ERROR, {
+      method, url, code: error.code, status: error.statusCode,
+      userId: req.user?.sub, role: req.user?.role,
+      domain: error.domain, details: error.details,
+      ms: handlerMs, totalMs, proxyDelayMs,
+    })
+  } else {
+    log.error(LOG_EVENTS.RESPONSE_UNHANDLED, {
+      method, url, error: error.message, stack: error.stack,
+      userId: req.user?.sub, role: req.user?.role,
+      ms: handlerMs, totalMs, proxyDelayMs,
+    })
+    captureError(error) // Sentry
+  }
+  responseHelper.error(error)
+}
+```
+
+**Resposta padronizada:**
+
+| Tipo de Erro | Status | Resposta JSON |
+|--------------|--------|---------------|
+| `AppError` (e subclasses) | `error.statusCode` | `{ error: { code, message } }` |
+| Erro desconhecido | 500 | `{ error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } }` |
+| `TooManyRequestsError` | 429 | `{ error: { code, message } }` + header `Retry-After` |
+
+**Detalhes capturados nos logs:**
+
+| Campo | Descrição |
+|-------|-----------|
+| `userId` | ID do usuário autenticado (se houver) |
+| `role` | Papel do usuário (admin, gestor, etc.) |
+| `domain` | Domínio do erro (auth, whatsapp, upload) |
+| `details` | Contexto adicional do erro (ex: `hoursSinceLastMessage`) |
+| `stack` | Stack trace completo (só para erros desconhecidos) |
+| `ms`, `totalMs`, `proxyDelayMs` | Métricas de performance |
+
+### Regras do Exception Filter
+
+1. **Nunca capture erros no controller** — deixe propagar para o Router
+2. **Use cases nunca fazem try/catch** — erros vão direto para o exception filter
+3. **Erros desconhecidos nunca vazam stack trace** — cliente recebe mensagem genérica 500
+4. **Sentry é acionado automaticamente** — só para erros não-`AppError` (bugs reais)
+5. **Log inclui contexto completo** — userId, role, domain, details, métricas
+
+### Quando Criar um Catch Local
+
+Apenas em casos específicos:
+- **Fallback gracioso** — ex: tentar provider alternativo se o principal falhar
+- **Cleanup de recursos** — ex: fechar conexão, liberar lock
+- **Retry com limite** — ex: tentar 3x antes de propagar o erro
+
+```typescript
+// ✅ Correto — fallback gracioso
+try {
+  return await primaryProvider.send(message)
+} catch {
+  return await fallbackProvider.send(message)
+}
+
+// ❌ Errado — capturar para logar e relançar sem valor
+try {
+  return await useCase.execute(input)
+} catch (error) {
+  logger.error(error)
+  throw error // desnecessário — o Router já loga
+}
+```
+
 ---
 
 ## 8. Diretrizes de Banco de Dados e Migrações

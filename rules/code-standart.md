@@ -45,7 +45,11 @@ A stack inteira prioriza a tipagem estática e máxima performance em tempo de e
 
 - **Linguagem Principal:** TypeScript em 100% dos projetos.
 - **Ambiente de Execução (Runtime):** **Bun** como runtime nativo e gerenciador de pacotes para máxima velocidade.
-- **Backend:** Construído sobre **uWebSockets.js** rodando no Bun para conexões de ultra-alta performance e baixa latência (HTTP e WebSockets).
+- **Backend:** Construído com `Bun.serve`, cuja implementação HTTP/WebSocket do
+  Bun usa uWebSockets internamente. É proibido instalar ou importar o addon
+  `uWebSockets.js` para Node/V8 em aplicações Bun.
+- **Banco de dados:** PostgreSQL com **Drizzle ORM** e migrations versionadas
+  pelo Drizzle Kit. Prisma não faz parte da stack padrão.
 - **Frontend:** **React** atualizado com o que há de mais moderno na comunidade (ecossistema Bun, Server Components quando aplicável, Vite/Bun build tooling).
 - **Pacotes Dinâmicos (Packages/Ex-libs):** Se um Provedor de Serviço for consumido por mais do que um tipo de projeto (ex: `api` e `worker`), ele deve ser encapsulado em um pacote independente em `packages/` e configurado estritamente por variáveis de ambiente (`process.env`). Se o caminho for incerto, a I.A. deve **parar e perguntar**.
 

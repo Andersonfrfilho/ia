@@ -25,6 +25,20 @@ to the task:
 - APIs:
   `/Users/anderson.filho/.claude/standards/apis.md`
 
+For projects governed by the Ada architecture rules, also read only the
+relevant files below:
+
+- Runtime, application boundaries, and Makefile:
+  `/Users/anderson.filho/.claude/rules/rules/code-standart.md`
+- Bun HTTP APIs:
+  `/Users/anderson.filho/.claude/rules/rules/backend/api.md`
+- PostgreSQL and Drizzle:
+  `/Users/anderson.filho/.claude/rules/rules/backend/database.md`
+- Bun workers:
+  `/Users/anderson.filho/.claude/rules/rules/backend/worker.md`
+- React web:
+  `/Users/anderson.filho/.claude/rules/rules/frontend/web.md`
+
 Do not load every standard for a documentation-only or unrelated task.
 
 ## Token-efficient shell work

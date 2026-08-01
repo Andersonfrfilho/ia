@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/apps/mobile-*/**"
+  - "**/*.screen.tsx"
+---
+
 # 📱 Diretrizes de Arquitetura e Padrões para I.A. (Frontend Mobile)
 
 Este documento estabelece as regras estritas de codificação, arquitetura, performance e qualidade para o desenvolvimento das aplicações **Mobile** dentro do Monorepo. Toda inteligência artificial (I.A.) ou desenvolvedor atuando nesta base de código deve respeitar rigorosamente estas diretrizes.

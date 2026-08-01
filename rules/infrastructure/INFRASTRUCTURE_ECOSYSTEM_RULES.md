@@ -1,3 +1,16 @@
+---
+paths:
+  - "**/*.tf"
+  - "**/*.tfvars"
+  - "**/k8s/**"
+  - "**/kubernetes/**"
+  - "**/helm/**"
+  - "**/manifests/**"
+  - "**/docker-compose*.yml"
+  - "**/Dockerfile*"
+  - "**/kong*.yml"
+---
+
 # 🏗️ Diretrizes de Infraestrutura, Orquestração e Observabilidade (V1)
 
 Este documento estabelece as regras estritas de infraestrutura como código (IaC), topologia de rede, segurança e observabilidade para o ecossistema de produção. Toda inteligência artificial (I.A.) ou engenheiro de DevOps atuando neste repositório deve respeitar rigorosamente estas diretrizes.

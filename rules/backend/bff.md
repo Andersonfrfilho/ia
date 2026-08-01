@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/apps/*bff*/**"
+---
+
 ## 1. 🖥️ BFF (Backend For Frontend)
 
 O BFF é a camada intermediária entre os clientes (Web/Mobile) e os microsserviços/APIs centrais. A sua principal responsabilidade é **formatar, agregar e ditar o contrato visual** para as interfaces.

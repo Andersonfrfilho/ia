@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/*.queue.ts"
+  - "**/*bull*.ts"
+  - "**/*.processor.ts"
+---
+
 ## 5. ⚡ BullMQ (Filas Leves sobre Redis)
 
 O **RabbitMQ** continua sendo o broker padrão e preferencial do ecossistema (ver `worker.md`) para

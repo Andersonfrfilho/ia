@@ -38,6 +38,8 @@ relevant files below:
   `/Users/anderson.filho/.claude/rules/rules/backend/worker.md`
 - React web:
   `/Users/anderson.filho/.claude/rules/rules/frontend/web.md`
+- Pluggable capability modules (shared packages across products):
+  `/Users/anderson.filho/.claude/rules/rules/packages/pluggable-module.md`
 
 Do not load every standard for a documentation-only or unrelated task.
 

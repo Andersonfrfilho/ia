@@ -1,3 +1,10 @@
+---
+paths:
+  - "**/apps/worker-*/**"
+  - "**/*.consumer.ts"
+  - "**/messaging/**"
+---
+
 ## 3. ⚙️ Worker (Processamento em Background / Mensageria)
 
 O Worker é uma aplicação "headless" (sem interface ou portas HTTP expostas para clientes, exceto `/healthcheck`). Ele consome ativamente filas ou tópicos para desonerar a API principal.

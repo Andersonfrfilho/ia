@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/apps/cron-*/**"
+  - "**/*.cron.ts"
+---
+
 ## 4. ⏰ Cron (Tarefas Agendadas)
 
 O Cron gerencia execuções baseadas em tempo (batch processing, expiração de tokens, limpezas, cobranças mensais).

@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.html"
+---
+
 # Ada Technology — Identidade Visual para Documentos de Cliente
 
 ## Tipografia

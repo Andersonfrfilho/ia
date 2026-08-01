@@ -1,0 +1,473 @@
+---
+# NUNCA carregado automaticamente: este glob não casa com nenhum arquivo real.
+# É o detalhamento completo, lido sob demanda quando o núcleo mandar.
+paths:
+  - "**/__nunca_carregar_automaticamente__/**"
+---
+
+# 📐 Diretrizes de Arquitetura, Padrões de Código e Regras para I.A. (V7 - Versão Definitiva Completa)
+
+Este documento estabelece as regras estritas de codificação, nomenclatura, arquitetura, infraestrutura local, documentação e qualidade que devem ser seguidas em todo o ciclo de desenvolvimento deste repositório. Toda inteligência artificial (I.A.) ou desenvolvedor atuando nesta base de código deve respeitar rigorosamente estas diretrizes.
+
+---
+
+## 1. Convenção de Nomenclatura e Extensões de Arquivos
+
+Para garantir consistência visual e facilidade de busca no projeto, todos os ficheiros criados devem adotar explicitamente os seus sufixos de papel/responsabilidade na extensão:
+
+- **Casos de Uso / Regras de Negócio:** `*.use-case.ts`
+- **Serviços / Integrações:** `*.service.ts`
+- **Controladores / Portas de Entrada:** `*.controller.ts`
+- **Constantes Globais/Locais:** `*.constant.ts`
+- **Tipos e Interfaces de Domínio:** `*.types.ts` ou `*.interface.ts`
+- **Esquemas de Validação:** `*.schema.ts`
+- **Classes de Erro Customizadas:** `*.error.ts`
+
+---
+
+## 2. Divisão de Projetos, Ecossistema Tecnológico e Monorepo
+
+O ecossistema deve ser planejado de forma segregada e escalável, separando os pontos de entrada e processamento do sistema. Sempre avalie a necessidade de dividir a arquitetura nos seguintes escopos:
+
+### 🚀 Divisão de Camadas e Projetos
+
+- **api (Aplicações Principais):** Responsável por expor endpoints HTTP/WebSocket. Atua como produtora de mensagens sempre que houver necessidade de processamento assíncrono.
+- **worker (Mensageria):** Consumidor exclusivo de filas/tópicos (ex: RabbitMQ, Kafka, Redis Streams) para processamento em background de tarefas pesadas.
+- **cron (Tarefas Agendadas):** Projetos dedicados a rodar rotinas temporizadas ou agendadas (ex: limpezas de banco, relatórios diários).
+- **micro-services:** Criados apenas sob real necessidade de isolamento de domínio ou escalabilidade extrema de carga.
+- **frontend / mobile:** Interfaces de usuário totalmente desacopladas do backend.
+
+### 🏷️ Nomenclatura Padrão de Pastas/Projetos
+
+Todos os projetos de escopo de execução dentro da pasta `apps/` devem seguir o prefixo da sua responsabilidade por hífen:
+
+- `apps/api-...` (ex: `apps/api-principal`, `apps/api-checkout`)
+- `apps/worker-...` (ex: `apps/worker-pagamentos`)
+- `apps/cron-...` (ex: `apps/cron-notificacoes`)
+- `apps/frontend-...` ou `apps/mobile-...`
+
+### 🛠️ Stack Tecnológica Obrigatória
+
+A stack inteira prioriza a tipagem estática e máxima performance em tempo de execução:
+
+- **Linguagem Principal:** TypeScript em 100% dos projetos.
+- **Ambiente de Execução (Runtime):** **Bun** como runtime nativo e gerenciador de pacotes para máxima velocidade.
+- **Backend:** Construído com `Bun.serve`, cuja implementação HTTP/WebSocket do
+  Bun usa uWebSockets internamente. É proibido instalar ou importar o addon
+  `uWebSockets.js` para Node/V8 em aplicações Bun.
+- **Banco de dados:** PostgreSQL com **Drizzle ORM** e migrations versionadas
+  pelo Drizzle Kit. Prisma não faz parte da stack padrão.
+- **Frontend:** **React** atualizado com o que há de mais moderno na comunidade (ecossistema Bun, Server Components quando aplicável, Vite/Bun build tooling).
+- **Pacotes Dinâmicos (Packages/Ex-libs):** Se um Provedor de Serviço for consumido por mais do que um tipo de projeto (ex: `api` e `worker`), ele deve ser encapsulado em um pacote independente em `packages/` e configurado estritamente por variáveis de ambiente (`process.env`). Se o caminho for incerto, a I.A. deve **parar e perguntar**.
+
+---
+
+## 3. Estrutura Modular e Localização do Código Partilhado (Shared)
+
+- **Shared de Módulo:** Elementos que servem apenas àquele domínio específico residem em `src/modules/<Modulo>/shared/`.
+- **Shared Global do Projeto:** Elementos técnicos transversais pertencentes a uma aplicação específica ficam em `src/modules/shared/`.
+
+### 📂 Mapa de Pastas Padrão do Monorepo
+
+```text
+meu-monorepo/
+├── apps/
+│   ├── api-principal/                       <-- Prefixo "api-..."
+│   │   └── src/
+│   │       ├── modules/
+│   │       │   ├── Order/
+│   │       │   │   ├── controllers/
+│   │       │   │   │   └── Order.controller.ts
+│   │       │   │   ├── services/
+│   │       │   │   │   └── Order.service.ts
+│   │       │   │   ├── use-cases/
+│   │       │   │   │   └── ProcessOrder.use-case.ts
+│   │       │   │   └── shared/
+│   │       │   │       ├── Order.constant.ts
+│   │       │   │       └── errors/
+│   │       │   │           └── OrderNotFound.error.ts
+│   │       │   └── shared/
+│   │       │       ├── errors/
+│   │       │       │   └── BaseError.ts
+│   │       │       └── modules.shared.ts
+│   │       └── server.ts                    <-- Usando uWebSockets.js no Bun
+│   │
+│   ├── worker-pagamentos/                   <-- Prefixo "worker-..."
+│   └── frontend-cliente/                    <-- Prefixo "frontend-..."
+│
+├── packages/                                <-- Módulos autônomos Node.js
+│   └── CryptoProvider/
+│       ├── CryptoProvider.interface.ts
+│       └── implementations/
+│           └── BcryptCryptoProvider.ts
+│
+├── docker-compose.yml
+├── Makefile
+├── init-claude.md                           <-- Arquivo de Contexto para a I.A. (Sempre Atualizado)
+└── envs/                                    <-- Isolamento central de Variáveis de Ambiente
+    ├── env.dev
+    ├── env.dev.local
+    ├── env.test
+    └── env.test.e2e
+```
+
+---
+
+## 4. Ambiente de Desenvolvimento Local Automatizado (DevOps Local)
+
+Toda a infraestrutura para rodar e testar o projeto localmente deve ser encapsulada, isolada e orquestrada de forma simples.
+
+### 🐳 Docker Compose e Serviços de Mocks
+
+- Um arquivo unificado `docker-compose.yml` na raiz do monorepo deve subir todas as dependências de infraestrutura necessárias (Banco de Dados, Brokers de Mensageria como RabbitMQ, Redis, etc.).
+- **Serviços de Mocks:** Se o projeto depender de APIs de terceiros que cobram por chamada ou não possuem ambiente de sandbox estável, deve ser configurado um container de mock dentro do docker-compose para simular essas respostas localmente.
+
+### 🔐 Gestão Estrita de Configurações (.env)
+
+Todas as variáveis de ambiente devem ser centralizadas e segregadas em arquivos específicos na raiz ou em uma pasta dedicada (`envs/`):
+
+- `env.dev`, `env.dev.local`, `env.test`, `env.test.e2e`.
+
+### 🛠️ Makefile Descritivo com Emojis
+
+A raiz do projeto deve conter um arquivo `Makefile` documentado e utilizando emojis para identificação visual rápida, abstraindo comandos complexos (ex: `make up`, `make test-unit`).
+
+- **`PROJECT_NAME` Obrigatório por Ambiente:** O `Makefile` deve declarar uma variável `PROJECT_NAME` (lida do respectivo `env.<ambiente>`, ex: `envs/env.dev`) e propagá-la para todo recurso criado — nome do projeto do Docker Compose (`docker compose -p $(PROJECT_NAME)-$(ENV)`), containers, volumes, networks e filas/exchanges de teste. Isso evita colisão de recursos quando múltiplos ambientes (`dev`, `test`, `test.e2e`) rodam na mesma máquina simultaneamente.
+- **Nomenclatura Derivada:** Todo recurso nomeado no Makefile deve seguir o padrão `$(PROJECT_NAME)-$(ENV)-<recurso>` (ex: `minha-api-dev-postgres`, `minha-api-test-rabbitmq`), nunca nomes fixos sem o prefixo do projeto/ambiente.
+
+---
+
+## 5. Seeders Baseados em Casos de Uso
+
+- **Proibido SQL Direto em Seeds:** Os arquivos de seed do banco de dados não devem realizar inserts brutos (`INSERT INTO...`).
+- **Simulação de Jornadas Reais:** Os seeders devem instanciar e executar os próprios **Casos de Uso (`*.use-case.ts`)** da aplicação de forma sequencial para testar todas as validações, filas e logs organicamente.
+
+---
+
+## 6. Injeção de Dependências Explícita
+
+- **Injeção via Construtor:** Use Cases e Serviços dependem de **Interfaces** (`*.interface.ts`) passadas via construtor, eliminando o acoplamento pelo operador `new`.
+
+---
+
+## 7. Tratamento de Exceções, Erros e Validações
+
+### Códigos de Erro Centralizados
+
+Todos os códigos de erro são centralizados em `shared/errors/codes.ts`, organizados por domínio:
+
+```typescript
+// Auth
+export const AUTH_INVALID_CREDENTIALS = 'AUTH_INVALID_CREDENTIALS'
+export const AUTH_TOKEN_EXPIRED = 'AUTH_TOKEN_EXPIRED'
+
+// WhatsApp
+export const WHATSAPP_WINDOW_EXPIRED = 'WHATSAPP_WINDOW_EXPIRED'
+export const WHATSAPP_CONFIG_MISSING = 'WHATSAPP_CONFIG_MISSING'
+```
+
+### Classes de Erro por Domínio
+
+Cada domínio tem sua própria hierarquia de classes estendendo `DomainError` (que estende `AppError`):
+
+```typescript
+// Classe base do domínio
+export class WhatsAppError extends DomainError { ... }
+
+// Erros específicos
+export class WhatsAppWindowExpiredError extends WhatsAppError {
+  constructor(message?: string, public readonly hoursSinceLastMessage?: number) { ... }
+}
+```
+
+### Uso Correto
+
+```typescript
+// ✅ Correto — usar classe específica do domínio
+throw new WhatsAppWindowExpiredError()
+throw new AuthInvalidCredentialsError()
+
+// ❌ Errado — nunca usar AppError diretamente
+throw new AppError('Erro genérico', 500, 'GENERIC_ERROR')
+
+// Catch com instanceof (type-safe)
+try { ... }
+catch (e) {
+  if (e instanceof WhatsAppWindowExpiredError) {
+    // e.hoursSinceLastMessage está disponível
+  }
+  if (e instanceof AuthInvalidCredentialsError) {
+    // tratar falha de login
+  }
+}
+```
+
+### Regras
+
+1. **Nunca use `new AppError(...)` diretamente** — use a classe de erro específica do domínio
+2. **Códigos de erro devem estar em `codes.ts`** — sem códigos string inline
+3. **Erros de domínio podem carregar contexto** — ex: `WhatsAppWindowExpiredError` carrega `hoursSinceLastMessage`
+4. **Sem try/catch genérico nos use cases** — erros propagam para o controller/middleware de erros
+5. **Frontend usa `getApiErrorCode()`** — para filtrar/tratar erros por código
+
+### Módulos de Erro Disponíveis
+
+| Módulo | Arquivo | Exemplos |
+|--------|---------|----------|
+| Auth | `AuthErrors.ts` | `AuthInvalidCredentialsError`, `AuthTokenExpiredError` |
+| WhatsApp | `WhatsAppErrors.ts` | `WhatsAppWindowExpiredError`, `WhatsAppConfigMissingError` |
+| Uploads | `UploadErrors.ts` | `UploadNotFoundError`, `UploadInvalidTypeError` |
+
+### Exception Filter Global
+
+O projeto utiliza um **Exception Filter global** no Router (`src/infra/http/router.ts`) que captura todos os erros não tratados nos handlers:
+
+```typescript
+// Router catch-all (equivalente ao @Catch() do NestJS)
+catch (error) {
+  if (error instanceof AppError) {
+    log.info(LOG_EVENTS.RESPONSE_ERROR, {
+      method, url, code: error.code, status: error.statusCode,
+      userId: req.user?.sub, role: req.user?.role,
+      domain: error.domain, details: error.details,
+      ms: handlerMs, totalMs, proxyDelayMs,
+    })
+  } else {
+    log.error(LOG_EVENTS.RESPONSE_UNHANDLED, {
+      method, url, error: error.message, stack: error.stack,
+      userId: req.user?.sub, role: req.user?.role,
+      ms: handlerMs, totalMs, proxyDelayMs,
+    })
+    captureError(error) // Sentry
+  }
+  responseHelper.error(error)
+}
+```
+
+**Resposta padronizada:**
+
+| Tipo de Erro | Status | Resposta JSON |
+|--------------|--------|---------------|
+| `AppError` (e subclasses) | `error.statusCode` | `{ error: { code, message } }` |
+| Erro desconhecido | 500 | `{ error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } }` |
+| `TooManyRequestsError` | 429 | `{ error: { code, message } }` + header `Retry-After` |
+
+**Detalhes capturados nos logs:**
+
+| Campo | Descrição |
+|-------|-----------|
+| `userId` | ID do usuário autenticado (se houver) |
+| `role` | Papel do usuário (admin, gestor, etc.) |
+| `domain` | Domínio do erro (auth, whatsapp, upload) |
+| `details` | Contexto adicional do erro (ex: `hoursSinceLastMessage`) |
+| `stack` | Stack trace completo (só para erros desconhecidos) |
+| `ms`, `totalMs`, `proxyDelayMs` | Métricas de performance |
+
+### Regras do Exception Filter
+
+1. **Nunca capture erros no controller** — deixe propagar para o Router
+2. **Use cases nunca fazem try/catch** — erros vão direto para o exception filter
+3. **Erros desconhecidos nunca vazam stack trace** — cliente recebe mensagem genérica 500
+4. **Sentry é acionado automaticamente** — só para erros não-`AppError` (bugs reais)
+5. **Log inclui contexto completo** — userId, role, domain, details, métricas
+
+### Quando Criar um Catch Local
+
+Apenas em casos específicos:
+- **Fallback gracioso** — ex: tentar provider alternativo se o principal falhar
+- **Cleanup de recursos** — ex: fechar conexão, liberar lock
+- **Retry com limite** — ex: tentar 3x antes de propagar o erro
+
+```typescript
+// ✅ Correto — fallback gracioso
+try {
+  return await primaryProvider.send(message)
+} catch {
+  return await fallbackProvider.send(message)
+}
+
+// ❌ Errado — capturar para logar e relançar sem valor
+try {
+  return await useCase.execute(input)
+} catch (error) {
+  logger.error(error)
+  throw error // desnecessário — o Router já loga
+}
+```
+
+---
+
+## 8. Diretrizes de Banco de Dados e Migrações
+
+- **VARCHAR sobre ENUMs:** Proibido uso de ENUM nativo de banco de dados.
+- **Largura de Strings e Chaves:** Chaves primárias usam UUID (v4/v7) para dados públicos e BigInt sequencial para contextos internos N:N.
+
+---
+
+## 9. Clean Code e Limites de Complexidade
+
+- **Complexidade Ciclomática Máxima:** Limite estrito de no máximo **3 níveis de aninhamento** lógico por método. Mantenha os métodos concisos (alvo: 50 linhas).
+
+---
+
+## 15. Tipagem de Parâmetros e Retornos de Funções
+
+Sempre que uma função ou método receber **mais de um parâmetro**, os parâmetros devem ser encapsulados em um objeto tipado. O mesmo se aplica ao retorno quando ele for composto.
+
+### 📐 Regras
+
+- **Parâmetros:** Criar um `type` dedicado com sufixo `Params`, nomeado após a função: `NomeDaFuncaoParams`.
+- **Retorno:** Criar um `type` dedicado com sufixo `Result`, nomeado após a função: `NomeDaFuncaoResult`.
+- **Localização:** Os tipos devem residir em uma pasta `types/` dentro do mesmo módulo da função, em arquivo com sufixo `*.types.ts`.
+
+```ts
+// types/ProcessOrderParams.types.ts
+type ProcessOrderParams = {
+  readonly orderId: string;
+  readonly userId: string;
+  readonly amount: number;
+};
+
+type ProcessOrderResult = {
+  readonly transactionId: string;
+  readonly processedAt: Date;
+};
+
+// use-cases/ProcessOrder.use-case.ts
+function processOrder(params: ProcessOrderParams): ProcessOrderResult {
+  // ...
+}
+```
+
+```text
+modules/
+└── Order/
+    ├── use-cases/
+    │   └── ProcessOrder.use-case.ts
+    └── types/
+        └── ProcessOrder.types.ts   <-- ProcessOrderParams + ProcessOrderResult
+```
+
+- **Proibido:** Funções com mais de 1 parâmetro posicional — use sempre o objeto tipado.
+
+---
+
+## 10. Observabilidade e Logs Narrativos
+
+- **Máscara Padronizada:** `[traceId][timestamp][appName][traceStack...][source][lib][LEVEL] - message - meta`
+
+---
+
+## 11. Cultura de Qualidade Automatizada (TDD)
+
+- Cobertura via TDD cobrindo caminhos felizes e de falha nos testes unitários e ponta a ponta (E2E) rodando isoladamente usando `env.test.e2e`.
+
+---
+
+## 12. Curadoria de Bibliotecas e Inovação Tecnológica
+
+Antes de adicionar qualquer nova dependência ou reinventar a roda, a I.A. ou o desenvolvedor deve realizar uma pesquisa proativa:
+
+- **As Melhores e Mais Modernas:** Buscar sempre as bibliotecas mais modernas, seguras e ativamente mantidas pela comunidade para resolver o problema.
+- **Compatibilidade Arquitetural:** Avaliar estritamente se a biblioteca escolhida é aderente à arquitetura do ecossistema (compatível com Bun, suporte a alto rendimento, tipagem nativa em TypeScript, sem gargalos de I/O bloqueante).
+
+---
+
+## 13. Documentação Viva e Sincronização com I.A.
+
+Todo projeto dentro do monorepo deve obrigatoriamente manter documentações atualizadas e acessíveis.
+
+- **Documentação de Roteamento:** Cada API deve ter seus endpoints, payloads esperados e contratos de WebSockets rigorosamente documentados (ex: via Swagger/OpenAPI ou arquivos Markdown dedicados na raiz do módulo).
+- **Documentação de Negócio:** As regras de domínio complexas e o fluxo de decisão devem estar documentados para justificar o _porquê_ das implementações.
+- **Sincronização Contínua com a I.A. (`init-claude.md`):** O projeto deve manter um arquivo de inicialização de contexto na raiz (ex: `init-claude.md`, `.cursorrules` ou `ai-context.md`). **Regra inquebrável:** Ao final de qualquer modificação de arquitetura, adição de nova rota ou alteração em regras de negócio, este arquivo de configuração **deve ser obrigatoriamente atualizado** para refletir o estado atual do projeto, garantindo que as ferramentas de I.A. iniciem as próximas tarefas sempre com o contexto correto e mais recente.
+
+---
+
+## 14. 🛡️ Auditoria Final (Go-Live: Segurança & Performance)
+
+É estritamente obrigatório que a I.A. ou o desenvolvedor, **ao final da implementação de qualquer projeto ou funcionalidade**, execute uma auditoria proativa:
+
+- **Auditoria de Performance:** Validar queries N+1, certificar que todo I/O é assíncrono (não bloqueante) e verificar o uso correto de estruturas otimizadas (`Sets`, `Maps` vs `Arrays`).
+- **Auditoria de Segurança:** Revisar a higienização de logs (sem PII), garantir o tratamento rigoroso de inputs na entrada das rotas e confirmar que não há vazamento de Stack Traces HTTP 500 para o cliente.
+
+---
+
+## 16. Extração de Strings Repetidas em Constantes e Fábricas de Configuração
+
+Toda string literal que aparecer **2 ou mais vezes** no codebase — seja como valor de variável, argumento de função, chave de objeto ou condicional — deve ser extraída para uma constante nomeada (`SCREAMING_SNAKE_CASE`) no arquivo `*.constant.ts` do escopo mais próximo.
+
+### 📐 Gatilhos de Extração
+
+- **Literais de domínio repetidos:** status, eventos, tipos, chaves de roteamento (ex: `'pending'`, `'approved'`, `'order.created'`)
+- **Strings de configuração de infraestrutura:** nomes de filas, exchanges, tópicos, prefixos de cache
+- **Níveis e categorias de log:** `'info'`, `'error'`, `'warn'`, `'debug'` — nunca literais espalhados no código
+- **Rotas e prefixos de URL internos:** `'/v1/orders'`, `'/healthcheck'`
+- **Mensagens de erro e códigos de rastreio:** qualquer string passada para `BaseError` ou similar
+
+### 📐 Regra de Escopo da Constante
+
+| Repetição ocorre em...           | Onde declarar                                        |
+| --------------------------------- | ---------------------------------------------------- |
+| Dentro de um único módulo        | `src/modules/<Modulo>/shared/<Modulo>.constant.ts`   |
+| Entre módulos da mesma aplicação | `src/modules/shared/shared.constant.ts`              |
+| Entre aplicações do monorepo     | `packages/<ContextoProvider>/<Contexto>.constant.ts` |
+
+### 📐 Fábricas de Configuração Pré-existentes
+
+Quando uma estrutura de configuração se repete em múltiplos pontos (ex: opções de conexão, configuração de canal RabbitMQ, opções do logger), ela deve ser centralizada em uma **função fábrica** nomeada com o prefixo `build` ou `create`, localizada em `*.constant.ts` ou em um arquivo dedicado `*.factory.ts`.
+
+```ts
+// shared/Log.constant.ts
+export const LOG_LEVEL = {
+  INFO: "info",
+  ERROR: "error",
+  WARN: "warn",
+  DEBUG: "debug",
+} as const;
+export type LogLevel = (typeof LOG_LEVEL)[keyof typeof LOG_LEVEL];
+
+// shared/RabbitMq.constant.ts
+export const RABBITMQ_EXCHANGE = {
+  ORDER_EVENTS: "order.events",
+  PAYMENT_EVENTS: "payment.events",
+} as const;
+
+export const RABBITMQ_QUEUE = {
+  PROCESS_PAYMENT: "payment.process",
+  SEND_EMAIL: "notification.email",
+} as const;
+
+// shared/RabbitMqChannel.factory.ts
+export function buildChannelOptions(prefetchCount: number) {
+  return { prefetch: prefetchCount, noAck: false };
+}
+```
+
+```ts
+// ❌ Errado — literal espalhado em 3 lugares diferentes
+logger.log("info", "Pedido criado");
+logger.log("info", "Pagamento aprovado");
+if (level === "error") notifyOncall();
+
+// ✅ Correto — centralizado e tipado
+import { LOG_LEVEL } from "@/modules/shared/Log.constant";
+
+logger.log(LOG_LEVEL.INFO, "Pedido criado");
+logger.log(LOG_LEVEL.INFO, "Pagamento aprovado");
+if (level === LOG_LEVEL.ERROR) notifyOncall();
+```
+
+### 📐 Critério de Decisão para a I.A.
+
+Ao gerar ou revisar código, a I.A. deve:
+
+1. Varrer o escopo atual em busca de strings idênticas ou semanticamente equivalentes já existentes
+2. Se encontrar 2+ ocorrências — **parar e extrair** antes de continuar
+3. Se a constante já existe em outro módulo — **importar, nunca redeclarar**
+4. Se a string é temporária e específica de um único teste — pode permanecer literal
+
+---
+
+## 17. Copyright e Licenciamento de Arquivos-Fonte
+
+Todo arquivo de código-fonte deve conter, no topo, um cabeçalho de copyright indicando autor, ano e tipo de licença (ex: MIT, Apache 2.0), além da identificação da empresa **Ada Technology** (ver `ada-branding.md` para o padrão visual do logo). Os termos de uso e distribuição devem ficar claros e visíveis para qualquer pessoa que utilize ou modifique o código.

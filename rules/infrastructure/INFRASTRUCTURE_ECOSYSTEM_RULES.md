@@ -100,5 +100,48 @@ Os alertas devem ser disparados para canais integrados (ex: Slack, PagerDuty, Di
     * O banco de dados e o broker RabbitMQ só podem aceitar conexões vindas do namespace ou pods específicos das APIs e Workers.
     * Os BFFs e APIs não devem aceitar tráfego direto da internet pública, apenas requisições originadas estritamente dos IPs internos do **Kong API Gateway**.
 
+## 6. 🌐 Nomes de domínio por ambiente
+
+O **ponto separa o ambiente; o hífen nunca**. O endereço de um serviço é
+`<serviço>.<ambiente>.<zona>`, e **production não diz o ambiente** — ele é o endereço que o
+cliente digita:
+
+| Ambiente | Forma | Exemplo |
+|---|---|---|
+| production | `<serviço>.<zona>` | `api.exemplo.com.br` |
+| staging | `<serviço>.staging.<zona>` | `api.staging.exemplo.com.br` |
+| outros (qa, demo) | `<serviço>.<ambiente>.<zona>` | `api.qa.exemplo.com.br` |
+
+Por que ponto e não hífen (`api-staging.zona`):
+
+- **O ambiente vira um nível da hierarquia**, e nível é o que o DNS sabe delegar: `staging.<zona>`
+  pode ser delegada, restrita ou movida de provedor inteira, sem tocar em production. Com hífen,
+  staging e production são irmãos no mesmo nível e não há como separar um do outro.
+- **Um curinga `*.<zona>` cobriria os dois.** Certificado ou registro criado com boa intenção para
+  production passa a valer para `api-staging` junto — o erro não aparece até alguém depender dele.
+- **O hífen já é do nome do serviço** (`frontend-landing`, `worker-nfse`). Reusá-lo como separador
+  de ambiente torna `api-staging` ambíguo: serviço chamado `api-staging` ou serviço `api` em
+  staging? Quem lê não tem como saber, e script que faz `split('-')` erra.
+- Os domínios **gerados** pelo provedor (`api-staging-5633.up.railway.app`) usam hífen porque são
+  rótulo único num namespace compartilhado. Eles continuam válidos como endereço interno de gate e
+  smoke — **não são** o endereço do produto, e nenhum deles vai para material, e-mail ou
+  documentação voltada ao cliente.
+
+Regras que acompanham:
+
+- **Nome de serviço e rótulo de domínio são campos independentes.** O serviço pertence ao projeto
+  e é o mesmo nos dois ambientes; o domínio pertence ao par serviço/ambiente. O nome do cliente
+  vive no domínio, nunca no nome do serviço.
+- **Serviço interno não recebe domínio público** — worker, cron, broker e bancos falam só pela
+  rede interna. `/health` anônimo na internet aberta entrega a topologia da infra a quem perguntar.
+- **A landing é o domínio, e o apex é dela.** Site institucional e landing não levam rótulo de
+  serviço: em production respondem no apex (`<zona>`), e em staging no `staging.<zona>` puro. Mas
+  **CNAME na raiz é proibido pelo RFC 1034** — a raiz obriga `SOA` e `NS`, e `CNAME` não coexiste
+  com outro registro no mesmo nome. Provedor de PaaS entrega por CNAME e não publica IP fixo, então
+  apex exige provedor com **CNAME flattening** ou ALIAS/ANAME (Cloudflare, entre outros). Decidir
+  isso **antes** de prometer o apex: a troca arrasta a zona inteira, e o e-mail vai junto.
+- Rótulo em minúscula, sem acento e estável: trocar depois muda a URL que o cliente já usa, o
+  `FRONTEND_ORIGIN` da API, os `redirect_uri` do frontend e os do client no IAM.
+
 ---
 **Nota para a I.A.:** Ao arquitetar scripts de Terraform, manifestos K8s, ou configurações do Kong, certifique-se de aplicar o isolamento de rede por NetworkPolicies, mapear Crons estritamente como `CronJob` e amarrar os alarmes do Alertmanager nos thresholds críticos definidos.

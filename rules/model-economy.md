@@ -50,3 +50,42 @@ Executar com `haiku`/`sonnet` exige os gates de qualidade em **toda** task:
   type-checam e escondem erros reais.
 - Testes/validação do projeto (`make validate` ou equivalente).
 - Commit isolado por task para rollback barato.
+
+## 4. Spec fechada termina com o prompt de autopilot
+
+**Toda sessão que produz ou atualiza uma spec** (`spec.md` + `plan.md` + `tasks.md`, ou
+equivalente) termina entregando ao usuário **um prompt pronto para `/oh-my-claudecode:autopilot`**
+que execute aquela spec. Planejar caro e executar barato só funciona se a passagem de uma
+coisa para a outra não depender de o usuário remontar o contexto de cabeça.
+
+O prompt vai **no fim da resposta**, num bloco de código copiável, e também ao pé do
+`tasks.md` numa seção `## Prompt de execução`, para sobreviver ao fim da sessão.
+
+Ele declara, sempre:
+
+- **O caminho da spec** (`specs/NNN-nome/`) e a instrução de ler `spec.md`, `plan.md` e
+  `tasks.md` antes de tocar em código.
+- **O modelo por fase**, copiado da tabela do `tasks.md` (§1), com as tasks 🧠 nomeadas —
+  e a ordem de delegação: fase `sonnet`/`haiku` vai para subagente `executor` com
+  `model=<modelo>`; task 🧠 roda com `opus` (ou é validada por `architect`/`critic` em
+  `opus` antes de implementar).
+- **Os gates do §3** que fecham cada task (typecheck, testes/`make check`, commit isolado)
+  e o registro de evidência em `evidence.md`.
+- **O que o autopilot não decide sozinho**: deploy, migration destrutiva, `[NEEDS
+  CLARIFICATION]` aberto — nesses pontos ele para e pergunta.
+
+Formato:
+
+```text
+/oh-my-claudecode:autopilot Execute a spec specs/NNN-nome/ (leia spec.md, plan.md e tasks.md
+antes de começar). Uma task por vez, na ordem do tasks.md.
+Modelos: Fase 1 → executor model=sonnet · Fase 2 → executor model=haiku ·
+T2.3 🧠 → opus (validar com architect antes) · revisão final → code-reviewer model=opus.
+Cada task fecha com typecheck + testes + commit isolado, evidência em evidence.md.
+Pare e pergunte antes de: deploy, migration destrutiva, qualquer [NEEDS CLARIFICATION].
+```
+
+- Spec com `[NEEDS CLARIFICATION]` aberto **não** ganha prompt de execução — ganha a lista
+  das perguntas pendentes no lugar dele.
+- O prompt não substitui o §2: ao executar, a I.A. ainda confere o modelo da sessão contra
+  o da fase.

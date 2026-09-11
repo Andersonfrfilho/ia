@@ -52,17 +52,29 @@ packages/
 
 Capacidades que encapsulam produtos de um fornecedor/plataforma externa carregam o **prefixo do fornecedor** no nome do trio:
 
-- Produtos Meta: `meta-whatsapp-*`, `meta-catalog-*` (ex: `@ada/meta-whatsapp-module`, `@ada/meta-catalog-contracts`)
+- Produtos Meta: `meta-whatsapp-*` (ex: `@ada/meta-whatsapp-module`)
 - O mesmo vale para futuros fornecedores (ex: `google-*`, `openfinance-*`)
-- Capacidades próprias, sem fornecedor externo, não levam prefixo (ex: `fiscal-*`)
+- Capacidades próprias, sem fornecedor externo, não levam prefixo (ex: `fiscal-*`, `catalog-*`)
 - O prefixo se propaga aos identificadores internos: pgSchema `meta_whatsapp`, journal `meta_whatsapp_migrations`
+
+**Teste do prefixo: a capacidade existe sem o fornecedor?** Se sim, ela é própria e o prefixo
+mentiria sobre o acoplamento.
+
+- `meta-whatsapp-*` leva prefixo: sem a Graph API da Meta não existe a capacidade — ela É a
+  integração.
+- `catalog-*` **não** leva: cadastrar produto, precificar e organizar em catálogo funciona
+  inteiro sem a Meta. Publicar na Meta Commerce é integração **opcional e desligada por padrão**,
+  atrás de porta (`MetaCatalogSyncPort`); um nome `meta-catalog-module` faria toda vertical que
+  não vende por WhatsApp achar que precisa da Meta para gerenciar o próprio catálogo.
+- O SDK stateless que fala com o fornecedor mantém o prefixo mesmo quando serve uma capacidade
+  própria: `meta-catalog-provider` é cliente da Meta Commerce API e continua se chamando assim.
 
 ### 📐 Granularidade — Uma Capacidade por Trio
 
 Cada trio cobre **uma única capacidade**. Funcionalidades que convivem no mesmo fluxo mas não dependem conceitualmente uma da outra são **capacidades separadas, com SDKs separados**.
 
-- **Exemplo canônico: Catálogo ≠ WhatsApp.** Catálogo de produtos (cadastro, sincronização, listagem, pedidos) é uma capacidade própria — pode ser exibido na web, no PWA ou em outro canal. O trio é `meta-catalog-contracts` / `meta-catalog-module` / `meta-catalog-ui`, independente do trio `meta-whatsapp-*`.
-- A integração entre capacidades acontece **no produto** (ou por porta declarada): o produto pluga o `meta-catalog-module` no hook `onMessageReceived` do `meta-whatsapp-module` para responder consultas de produto; o `meta-whatsapp-module` nunca importa o `meta-catalog-module` nem vice-versa.
+- **Exemplo canônico: Catálogo ≠ WhatsApp.** Catálogo de produtos (cadastro, precificação, listagem, estoque) é uma capacidade própria — pode ser exibido na web, no PWA ou em outro canal. O trio é `catalog-contracts` / `catalog-module` / `catalog-ui`, independente do trio `meta-whatsapp-*`. Publicar esse catálogo na Meta Commerce é integração opcional do trio de catálogo, atrás de porta, e não muda o nome dele (ver o teste do prefixo acima).
+- A integração entre capacidades acontece **no produto** (ou por porta declarada): o produto pluga o `catalog-module` no hook `onMessageReceived` do `meta-whatsapp-module` para responder consultas de produto; o `meta-whatsapp-module` nunca importa o `catalog-module` nem vice-versa.
 - **Teste de granularidade:** se a capacidade B pode ser usada sem a capacidade A existir no produto, elas são trios separados. Empacotar as duas juntas força todo consumidor a carregar dependências que não usa e acopla os ciclos de versão.
 
 ---
@@ -138,7 +150,7 @@ Se o produto precisa de uma porta que não existe, o caminho é **abrir a porta 
 
 Padrão **headless por baixo, UI pronta por cima** (mesmo modelo de Radix/TanStack). Camadas de customização, da mais barata à mais profunda:
 
-1. **Tema e tokens** — o módulo não tem cor própria; consome os design tokens injetados (ver `web.md` seção 9). A mesma tela ganha a cara de cada produto trocando o theme.
+1. **Tema e tokens** — o módulo não tem cor própria; consome os design tokens injetados (ver `web.md` seção 8). A mesma tela ganha a cara de cada produto trocando o theme.
 2. **Configuração** — `<WhatsAppModuleProvider config={{ apiBasePath, features }} theme={...} locale={...} queryClient={queryClient}>` — usa o TanStack Query **do host**, nunca instancia o próprio.
 3. **Slots e overrides** — registry onde o host substitui peças pontuais: `components={{ MessageBubble: LeadScoringBubble }}`.
 4. **Camada headless (válvula de escape)** — o pacote exporta hooks/queries separados da UI (`useConversations.query.ts`, `useSendMessage.mutation.ts`). Quando a tela default não serve, o produto monta a própria tela sobre os mesmos hooks — continua herdando upgrades de lógica.
@@ -146,6 +158,28 @@ Padrão **headless por baixo, UI pronta por cima** (mesmo modelo de Radix/TanSta
 
 - Textos do módulo seguem `*.locale.json` próprios, com merge de overrides do host.
 - O módulo UI tipa contra o `<capacidade>-contracts`. O BFF do produto pode **decorar** respostas (agregar dados do produto), mas é proibido mutar o shape base.
+
+### 📐 A tela composta é o padrão de consumo — **OBRIGATÓRIO**
+
+Exportar só peças (`MessageBubble`, `Canvas`, `Palette`) não impede divergência: cada produto remonta o
+grid à mão, e as telas voltam a andar separadas — exatamente o que aconteceu com fluxograma e
+mensagens antes desta regra. **Toda capacidade com tela deve exportar o `<Capacidade>Workspace`
+composto**, e o produto consome a tela inteira, não as peças.
+
+- **Ao implementar ou alterar uma dessas telas num produto: puxar o workspace completo do pacote.**
+  Se a tela do produto passa de ~150 linhas, ou reimplementa layout, paginação, filtros, seleção em
+  lote ou composer, é sinal de que se está remontando o que o pacote já entrega — parar e usar o
+  workspace.
+- **O workspace aceita customização por contrato, não por fork.** Vocabulário do produto entra por
+  `labels`; UI específica entra por slot de render (`renderFilters`, `renderAboveTranscript`,
+  `extraUtilitiesFor`); regra de negócio entra por callback.
+- **Capacidade é opcional por ausência:** prop não passada não desenha o affordance (sem
+  `onRecordAudio`, sem microfone). O produto que não tem a funcionalidade simplesmente omite — nunca
+  ganha uma flag `hasX`.
+- Copiar a tela do pacote para dentro do produto para "ajustar um detalhe" é rejeitado em code
+  review. Falta de porta é motivo de PR no pacote, não de fork.
+- A camada headless (§4.4) continua sendo a válvula de escape — mas é exceção justificada no PR, não
+  o caminho padrão.
 
 ---
 
@@ -165,6 +199,7 @@ Padrão **headless por baixo, UI pronta por cima** (mesmo modelo de Radix/TanSta
 - [ ] Eventos de domínio documentados (nome, payload tipado no contracts)
 - [ ] Interfaces substituíveis com implementação default
 - [ ] Frontend com camada headless exportada independente das telas
+- [ ] Frontend expondo o `<Capacidade>Workspace` composto, com `labels` e slots de render
 - [ ] Nenhuma regra de negócio de produto dentro do módulo
 - [ ] README do pacote com: instalação, `create<Capacidade>Module`, portas de extensão, exemplo de host
 
@@ -181,6 +216,8 @@ Padrão **headless por baixo, UI pronta por cima** (mesmo modelo de Radix/TanSta
 | Host editando código do pacote (patch em `node_modules`, fork) | Perde upgrades; regra de extensão é porta declarada ou PR |
 | Regra de negócio do produto dentro do módulo | O módulo vira fork disfarçado e para de servir aos demais |
 | Extrair capacidade antes do 2º consumidor existir | Abstração prematura — custo sem retorno |
+| Produto remontar a tela a partir das peças em vez de usar o `<Capacidade>Workspace` | O grid volta a divergir entre produtos; é o que a §4 exige evitar |
+| Redeclarar localmente os tipos que vivem no `-contracts` | O contrato evolui e nada quebra em compile-time no produto |
 
 ---
 

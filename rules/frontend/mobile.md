@@ -205,3 +205,48 @@ export const SHADOW = {
 ### 🚨 Penalidade
 
 Código que contenha **valores arbitrários hardcoded** será **rejeitado em code review**. Toda constante visual deve vir dos arquivos de tema.
+
+## 11. Ícones em ações
+
+Vale a mesma regra da web (`web.md` §9): **todo botão e item de menu é avaliado para receber um
+ícone** ao lado do rótulo — ícone entra quando comunica a ação de imediato, fica de fora quando
+seria decorativo. A tabela de decisão (ação com convenção → sim; ação abstrata sem convenção →
+texto sozinho) é a mesma, e não se repete aqui.
+
+Três diferenças que só existem no mobile:
+
+- **Biblioteca nativa, nunca emoji em `<Text>` como ícone.** Emoji no Android e no iOS são
+  desenhos diferentes, não herdam `color` do estilo e desalinham na linha de base. Use a
+  biblioteca de ícones vetoriais do projeto (`@expo/vector-icons`, `react-native-vector-icons`
+  ou equivalente já adotado).
+- **Área de toque de 44px vale para o botão inteiro** (§ Responsividade da web e alvo mínimo
+  desta doc) — não para o ícone. Ícone de 20px dentro de um alvo de 44px, com `hitSlop` quando
+  o layout apertar.
+- Tamanho e cor vêm dos tokens (§10) — `size={SPACING.scale(5)}` e `color={COLORS...}`, nunca
+  `size={20}` solto.
+
+Botão só-ícone precisa de `accessibilityLabel`; ícone que acompanha rótulo é decorativo e leva
+`accessibilityElementsHidden` (iOS) / `importantForAccessibility="no"` (Android), para o leitor
+de tela não anunciar a ação duas vezes.
+
+## 12. Formulários — a recusa aponta o campo
+
+Vale integralmente a regra da web (`web.md` §11, *"A recusa do servidor nomeia o campo, e o nome é
+um atalho"*): o erro do cliente HTTP carrega `details[]`, **todos** os campos recusados são
+listados de uma vez, cada um vira atalho para o campo, e o que aparece é o rótulo impresso, não o
+caminho do corpo. A tabela de exigências não se repete aqui.
+
+Três diferenças que só existem no mobile:
+
+- **O atalho é `scrollTo` + `focus()`, não `scrollIntoView`.** Guarde a `ref` do input por campo
+  e role o `ScrollView`/`KeyboardAwareScrollView` até `measureLayout`. Focar sem rolar deixa o
+  cursor num campo fora da tela, e o teclado sobe escondendo o que se ia corrigir.
+- **O teclado é parte do problema.** Depois de rolar, o campo tem de ficar acima do teclado —
+  role com folga (`SPACING.scale(4)` além do topo do campo), não para a borda exata.
+- **A lista de campos é `Text` com `onPress` por item**, com área de toque de 44px como qualquer
+  outra ação (§11), e `accessibilityRole="button"` em cada nome. Um bloco de texto único com os
+  nomes dentro não é tocável e vira o mesmo aviso morto que a regra proíbe.
+
+A validação local continua acontecendo antes do envio; esta regra é sobre o que fazer quando o
+servidor recusa mesmo assim — e ele recusa, porque só o banco decide colisão e só ele conhece a
+constraint.

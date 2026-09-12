@@ -1,3 +1,12 @@
+---
+paths:
+  - "**/flows/**"
+  - "**/*flow*.ts"
+  - "**/*Flow*.ts"
+  - "**/*conversation*/**"
+  - "**/*whatsapp*/**"
+---
+
 # 💬 Fluxos de Conversa — Núcleo (V1)
 
 Regras normativas para o texto que o bot fala e para a forma como ele oferece escolha.

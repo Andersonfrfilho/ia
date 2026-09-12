@@ -1,3 +1,9 @@
+---
+# Lido pelo Codex, não pelo Claude: o glob nunca casa.
+paths:
+  - "**/__nunca_carregar_automaticamente__/**"
+---
+
 # Global Codex rules
 
 ## Precedence

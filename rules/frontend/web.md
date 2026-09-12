@@ -1,3 +1,12 @@
+---
+paths:
+  - "**/apps/frontend-*/**"
+  - "**/*.tsx"
+  - "**/*.jsx"
+  - "**/*.css"
+  - "**/vite.config.*"
+---
+
 # 📐 Frontend Web — Núcleo (V8)
 
 Regras normativas do frontend web. Bloqueantes em code review.

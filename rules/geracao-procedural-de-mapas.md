@@ -1,3 +1,13 @@
+---
+paths:
+  - "**/Web2D/src/**/world/**"
+  - "**/*procedural*"
+  - "**/*terrain*"
+  - "**/*river*"
+  - "**/*trail*"
+  - "**/Source/**/World/**"
+---
+
 # 🗺️ Geração procedural de mapas — trilhas, água e terreno
 
 Regras normativas para gerar rio, trilha, caverna, floresta e relevo. Bloqueantes

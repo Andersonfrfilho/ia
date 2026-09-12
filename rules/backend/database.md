@@ -1,3 +1,12 @@
+---
+paths:
+  - "**/*.sql"
+  - "**/drizzle/**"
+  - "**/migrations/**"
+  - "**/*.schema.ts"
+  - "**/drizzle.config.*"
+---
+
 # Banco de dados — PostgreSQL e Drizzle
 
 ## Stack obrigatória

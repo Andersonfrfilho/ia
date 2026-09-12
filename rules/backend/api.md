@@ -1,3 +1,11 @@
+---
+paths:
+  - "**/apps/api-*/**"
+  - "**/*.controller.ts"
+  - "**/*.use-case.ts"
+  - "**/*.route.ts"
+---
+
 ## 2. 🌐 API (Aplicações Principais)
 
 A API é o coração do domínio. Ela guarda as regras de negócio puras, gerencia transações de banco de dados e expõe as funcionalidades principais para o BFF ou para integrações externas.

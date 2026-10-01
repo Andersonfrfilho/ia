@@ -1,6 +1,10 @@
 ---
 paths:
   - "**/*.html"
+  # O rodapé de atribuição do produto vive em componente, não em documento.
+  - "**/*.tsx"
+  - "**/*.jsx"
+  - "**/*.vue"
 ---
 
 # Ada Technology — Identidade Visual para Documentos de Cliente
@@ -57,6 +61,46 @@ Toda documentação HTML voltada para clientes (propostas comerciais, apresenta�
   Documento confidencial gerado exclusivamente para apresentação comercial.
 </div>
 ```
+
+## Atribuição no rodapé do produto (software, não documento)
+
+As seções acima são de **documento HTML entregue a cliente**. Esta não: vale para toda interface
+que o usuário final abre — painel, landing, portal, PWA. O cabeçalho de copyright do arquivo-fonte
+(`code-standart.md` §17) não aparece na tela para ninguém; a atribuição abaixo é a única saída do
+produto para quem o fez.
+
+**Toda app com interface renderizada fecha com um rodapé que nomeia a Ada Technology**, num
+componente único por app — rodapé que mora numa tela só é rodapé que falta nas outras.
+
+```tsx
+const ADA_WEBSITE_URL = 'https://adatechnology.com.br'
+const ADA_MARK_SOURCE = '/icons/ada-technology.png'
+
+<footer>
+  <img alt="" aria-hidden="true" src={ADA_MARK_SOURCE} />
+  <span>
+    © {new Date().getFullYear()}{' '}
+    <a href={ADA_WEBSITE_URL} target="_blank" rel="noreferrer">Ada Technology</a> — {PRODUCT_NAME}
+  </span>
+</footer>
+```
+
+- **Produto de marca branca** (a landing de um cliente, onde o nome dele assina a página) troca a
+  frase, nunca a presença: o copyright fica com o cliente e a Ada entra numa segunda linha —
+  `Plataforma <Produto> — uma solução <a>Ada Technology</a>`.
+- `rel="noreferrer"` é obrigatório: sem ele a aba aberta herda `window.opener` e o caminho de volta
+  para a sessão.
+- O ano sai do relógio. Rodapé com ano fixo envelhece sem ninguém notar.
+- A marca é sempre o mesmo arquivo (`ada-technology.png`) em todas as apps — duas apps assinando com
+  desenhos diferentes é o produto se apresentando como dois produtos.
+- **Produto que usa WhatsApp Cloud API: a atribuição é bloqueante, não recomendação.** A análise do
+  nome de exibição da Meta procura no site a ligação com o Portfólio Empresarial, e sem ela o nome
+  é recusado ou aprovado sujo. Detalhe e checklist em `rules/whatsapp-cloud-api.md` § *O nome de
+  exibição é aprovado pelo site*.
+- **Congelar em teste de contrato.** A ausência de rodapé não quebra build, não quebra teste e não
+  aparece em review; só aparece quando a Meta reprova o nome de exibição ou o cliente pergunta quem
+  fez. Referência: `apps/frontend-transportada/test/design-system/application-footer.contract.ts` e
+  `apps/frontend-landing/test/design-system/ada-attribution.contract.ts` no TransportAdA.
 
 ## Modo e paleta
 

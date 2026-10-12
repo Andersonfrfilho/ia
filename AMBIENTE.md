@@ -221,3 +221,17 @@ docker ps && ollama list && railway whoami && rtk gain && bun --version
 ```
 
 Em uma sessão: `codebase_health` com tudo `[OK]`, e um pedido simples para confirmar que o Claude lê `CLAUDE.md` e as rules.
+
+## 12. Arquivos globais versionados (`global/`)
+
+Este repositório guarda `CLAUDE.md`, `RTK.md`, `CLAUDE-omc.md`, `standards/` e `hooks/` em `global/`.
+Num computador novo, depois do `git clone` da seção 11.2:
+
+```bash
+bash ~/.claude/rules/global/install.sh
+```
+
+O script cria links em `~/.claude` e guarda o que já existia como `*.bak`.
+Editar em `~/.claude/...` edita o arquivo do repositório; é só commitar.
+`settings.json` **não** está aqui (pode conter segredos e caminhos da máquina).
+O `CLAUDE-omc.md` é gerado pelo `omc-setup`; se o plugin o regenerar, o link continua valendo.

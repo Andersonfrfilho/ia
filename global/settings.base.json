@@ -4,6 +4,7 @@
   "effortLevel": "low",
   "env": {
     "QDRANT_MODE": "external",
+    "QDRANT_URL": "http://localhost:16333",
     "QDRANT_PORT": "16333",
     "OLLAMA_MODE": "external",
     "OLLAMA_URL": "http://localhost:11434",

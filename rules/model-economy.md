@@ -11,15 +11,27 @@ a tabela de papéis:
 
 | Modelo | Papel |
 |---|---|
-| `haiku` | Mecânico: traduções, renomes, passes de ícones/tokens, migrações repetitivas de componentes |
-| `sonnet` | **Padrão de execução**: CRUDs, bugs, telas, migrations simples, queries com aceite verificável |
-| `opus` / `fable` | 🧠 Arquitetura: design docs, modelo de dados novo, integrações entre repos, spikes, decisões estruturais |
+| `haiku` | **Padrão para tarefa com aceite por comando**: traduções/i18n, renomes com atualização de callers, passes de ícones/tokens, migrações repetitivas, ajustes de `package.json`/testes/formatação, CRUD simples seguindo padrão já existente, correção guiada por erro de typecheck/teste |
+| `sonnet` | Execução com decisão local: telas novas, bugs sem causa conhecida, migrations, queries, integrações dentro de um módulo, revisão de código — tudo que o `haiku` não cobre |
+| `opus` / `fable` | 🧠 Só arquitetura: design docs, modelo de dados novo, integrações entre repos, spikes, decisões estruturais. **Não** é execução difícil nem revisão — isso é `sonnet` |
+
+### Como classificar uma task (obrigatório na spec)
+
+Cada task responde duas perguntas no `tasks.md`:
+
+1. **Mecânica?** O que fazer está inteiramente descrito (arquivos, padrão a seguir, resultado)?
+2. **Aceite verificável por comando?** `tsc`, teste, `make check` ou grep dizem se passou?
+
+- Duas respostas "sim" → `haiku`.
+- Tarefa que mistura parte mecânica com uma decisão pequena → **separar em duas tasks**: a mecânica em `haiku`, a decisão em `sonnet`.
+- `opus` só entra se a task produz uma decisão que outras tasks vão herdar. Na dúvida entre `opus` e `sonnet`, `sonnet`; entre `sonnet` e `haiku`, tentar `haiku` e escalar se o gate falhar.
+- Escalada: gate falhou 2x em `haiku` → refazer em `sonnet`; em `sonnet` → só então `opus`. Registrar a escalada em `evidence.md`.
 
 Formato padrão sob o título da fase:
 
 ```markdown
 ## Fase N — <nome>
-> 🤖 Modelo: `sonnet` (Tx.y é 🧠 — validar com `opus` antes)
+> 🤖 Modelo: `haiku` (Tx.y → `sonnet`; Tx.z é 🧠 — validar com `opus` antes)
 ```
 
 - Tasks que exigem upgrade pontual dentro de uma fase barata são marcadas
@@ -79,8 +91,9 @@ Formato:
 ```text
 /oh-my-claudecode:autopilot Execute a spec specs/NNN-nome/ (leia spec.md, plan.md e tasks.md
 antes de começar). Uma task por vez, na ordem do tasks.md.
-Modelos: Fase 1 → executor model=sonnet · Fase 2 → executor model=haiku ·
-T2.3 🧠 → opus (validar com architect antes) · revisão final → code-reviewer model=opus.
+Modelos: Fase 1 → executor model=haiku · Fase 2 → executor model=sonnet ·
+T2.3 🧠 → opus (validar com architect antes) · revisão final → code-reviewer model=sonnet.
+Escalada: gate falhou 2x → sobe um nível (haiku→sonnet→opus) e registra em evidence.md.
 Cada task fecha com typecheck + testes + commit isolado, evidência em evidence.md.
 Pare e pergunte antes de: deploy, migration destrutiva, qualquer [NEEDS CLARIFICATION].
 ```

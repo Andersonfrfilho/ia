@@ -95,6 +95,13 @@ alteração de regra de negócio, atualizar o arquivo de contexto da I.A. na rai
 Ao fim de toda implementação: validar N+1, I/O assíncrono, uso de `Set`/`Map` vs array;
 revisar logs sem PII, sanitização de input nas rotas e ausência de stack trace em 500.
 
+Todo `Promise.all` novo ou editado: conferir se uma chamada falhando pode derrubar o restante do
+lote sem necessidade — `Promise.all` rejeita no primeiro erro e descarta os resultados das outras
+promises, mesmo as que já tinham terminado. Comparar contra `Promise.allSettled` (quando cada
+resultado deve seguir independente do que aconteceu com os outros) ou contra isolar com `.catch()`
+só a chamada que é refinamento/best-effort sobre um fluxo que já funciona sem ela — nunca deixar uma
+consulta secundária capaz de quebrar o caminho crítico só porque entrou no mesmo `Promise.all`.
+
 ## 16. Extração de strings repetidas
 
 String literal que apareça **2 ou mais vezes** vira constante `SCREAMING_SNAKE_CASE` no

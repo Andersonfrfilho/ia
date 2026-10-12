@@ -295,3 +295,24 @@ Disso decorre:
 
 Componente de interface novo escrito do zero, tendo equivalente no shadcn e sem justificativa acima,
 é **rejeitado em code review**.
+
+## 15. Revisão de design ao fim de toda tarefa — **OBRIGATÓRIO**
+
+**Nenhuma tarefa que toque a interface fecha sem uma revisão de design contra a própria página.**
+Teste verde e typecheck limpo não dizem se o campo novo é um `<input>` cru ao lado de um `Select`
+do design system, nem se o texto some sobre o fundo do botão — e é esse o defeito que o usuário vê
+primeiro.
+
+Ao terminar, antes de declarar a tarefa pronta:
+
+1. **Comparar com os vizinhos.** Todo elemento tocado é conferido contra os elementos da mesma tela
+   e das telas irmãs: campo com campo, botão com botão, cartão com cartão. Altura, borda, raio,
+   fundo, fonte, espaçamento e estado (hover, foco, desabilitado, selecionado) têm de bater. Se o
+   vizinho usa um primitivo do design system, o elemento novo usa o mesmo — nunca o cru.
+2. **Conferir o contraste de cada estado.** Texto, selo e ícone legíveis no estado normal **e** no
+   selecionado/ativo, nos temas que a app oferece. Texto secundário sobre fundo de destaque é o caso
+   que mais falha.
+3. **Olhar de verdade.** Um print da tela (ou de um recorte dela com os tokens reais) é a prova, e
+   é enviado ao usuário. Revisão feita só lendo o CSS não conta.
+4. **Divergência achada é consertada na mesma tarefa**, ou registrada como pendência explícita na
+   resposta — nunca omitida.

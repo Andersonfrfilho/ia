@@ -235,3 +235,38 @@ O script cria links em `~/.claude` e guarda o que já existia como `*.bak`.
 Editar em `~/.claude/...` edita o arquivo do repositório; é só commitar.
 `settings.json` **não** está aqui (pode conter segredos e caminhos da máquina).
 O `CLAUDE-omc.md` é gerado pelo `omc-setup`; se o plugin o regenerar, o link continua valendo.
+
+## 13. Retomar no outro computador as branches de trabalho do `transportada`
+
+Levantado em 2026-10-12. Estas nove branches existiam **só** no computador do Mac; foram enviadas ao `origin`
+com o mesmo nome (sem tocar em `staging` nem `main`; só `staging` e `main` disparam deploy). As datas e contagens
+abaixo são daquele dia — conferir de novo com `git fetch` antes de agir.
+
+```bash
+cd ~/Documents/personal/transportada
+git fetch origin
+git worktree add ../transportada-wt/spec-264 -b work/spec-264 origin/work/spec-264   # uma por branch
+```
+
+Depois de buscar: `bun install --frozen-lockfile`, e **rebasear sobre `origin/staging`** antes de continuar
+(`git fetch && git rebase origin/staging`), seguido de `bun run typecheck`. Spec, ADR e migration colidem com as de
+outras sessões: conferir o número em `origin/staging` e rodar `db:generate` esperando `no_changes` antes de publicar.
+
+| Branch | À frente / atrás de `staging` | O que é e o que falta |
+|---|---|---|
+| `work/spec-264` | 10 / 0 | Áudio e transcrição na visão do participante (contrato T0.1 e revisão T1.8). Já está sobre `staging`. ⚠️ O worktree no Mac (`transportada-wt/spec-260`) tem **14 arquivos não commitados** que **não estão no remoto**: commitar lá antes de sair do Mac, ou esse trecho se perde. |
+| `work/spec-248` | 13 / 335 | Retorno à contratante: schema e integração da migration (T3.1 e T3.2). Rebase pesado: regenerar a migration e o snapshot sobre o schema atual. Um arquivo não commitado no worktree do Mac. |
+| `work/spec-251` | 15 / 353 | Emissor Nacional: levantamento, modelo por task e contratos herdados da 250 (T0.1). Quase só documentação. |
+| `work/spec-239` | 110 / 826 | A maior. A exigência da ocorrência chega na rua; a spec virou a 245 e depois a 246. Cerca de 60 desses commits não têm o mesmo assunto em `staging`, mas a 246 já foi publicada: **antes de rebasear, comparar com `staging` o que realmente falta.** |
+| `work/spec-235` | 34 / 1174 | O ajudante é um perfil. Painel e API já estão em `staging` desde 2026-10-03; faltam cerca de 12 commits de documentação e a colisão do número 235. |
+| `work/259-lista-de-viagens-ocupacao-e-lucro` | 20 / 166 | Ocupação e lucro na lista de viagens. A API foi promovida (PR #158); sobram só as evidências da T3.3 e do gate final T4.2. |
+| `work/spec-247`, `work/spec-247-dec`, `work/spec-247-fe` | 39 / 25 / 46 | A devolução soma os itens. O conteúdo já está em `staging`; faltam só commits de `prettier` no `evidence.md`. Candidatas a descarte depois de conferir. |
+
+### O que ficou de fora de propósito
+
+- Branches cujo conteúdo já está em `staging` ou `main` foram apagadas no Mac (SHAs guardados em
+  `branch-shas-backup*.txt` na pasta de rascunho da sessão, que **não** vai para o outro computador).
+- Continuam **só no Mac**, sem cópia no remoto: `work/spec-211`, `work/spec-165`, `work/spec-145-detalhe-da-viagem`,
+  `work/reconcile-spec-145`, `work/openapi`, `work/spec-150`, os `wip/spec-133` a `wip/spec-146` e os `salvo/stash-*`.
+  Se algum for necessário no outro computador, enviar do Mac com `git push origin <branch>` primeiro.
+- Trabalho **não commitado** nunca viaja pelo git: conferir `git status` em cada worktree do Mac antes de trocar de máquina.

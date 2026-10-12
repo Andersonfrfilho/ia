@@ -30,6 +30,8 @@ foreach ($k in $base.Keys) { $cur[$k] = $base[$k] }
 $perm = if ($cur.ContainsKey('permissions')) { $cur['permissions'] } else { @{} }
 $perm['additionalDirectories'] = @($personal)
 $cur['permissions'] = $perm
+$hudPath = (Join-Path $target 'hud/omc-hud.mjs') -replace '\\','/'
+$cur['statusLine'] = @{ type = 'command'; command = "node $hudPath" }
 $cur | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding utf8
 Write-Host "merged $settingsPath"
 

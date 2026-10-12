@@ -323,3 +323,24 @@ dois se desalinharem, e o problema só aparece depois (ferramenta que funciona n
   configurações de região para a tela de boas-vindas.
 - **Abrir terminal no Ubuntu:** usar o Windows Terminal (perfil Ubuntu como padrão). Ao rodar `claude`, abrir a partir da
   pasta do projeto, não da home.
+
+### 14.3 Indexar projetos no SocratiCode (feito em 2026-10-12)
+
+Resultado: `quickcart` 2.576 chunks, `ativada` 8.959, `financing-chatbot` 10.714, `adatechnology-packages` 9.294,
+`ada-technology` 1.810, `transportada` 304.611 (99 min). Watchers ativos; o índice se atualiza com as mudanças.
+
+- **O índice é chaveado pelo caminho resolvido.** No Ubuntu, `~/personal` é link para `/mnt/c/Users/<user>/Documentos/personal`,
+  e o índice usa o caminho `/mnt/c/...`. Abrir o mesmo projeto por `~/personal/<projeto>` ou por `C:\...` não encontra o
+  índice e cria outro (duplicado no Qdrant). **Regra:** indexar e consultar sempre pelo caminho `/mnt/c/...` no Ubuntu.
+- **`QDRANT_URL` é obrigatório** em `QDRANT_MODE=external` (só `QDRANT_PORT` não basta). Está em `global/settings.base.json`.
+- **Não indexar com `claude -p`.** O indexador roda dentro do servidor MCP e morre quando a sessão termina; o `sleep` no
+  Bash é bloqueado e a sessão curta deixa o índice incompleto (o `financing-chatbot` parou em 720 chunks após 8 tentativas).
+  Falhas repetidas de conexão ainda gravam `~/.claude/mcp-needs-auth-cache.json`, e o Claude ignora o MCP por 15 min
+  (apagar o conteúdo do arquivo destrava).
+- **Use o script** `global/tools/socraticode-index.mjs`, que fala direto com o MCP e espera até terminar:
+
+```bash
+node ~/personal/ia/global/tools/socraticode-index.mjs /mnt/c/Users/ander/Documentos/personal quickcart transportada
+```
+
+  Retoma de onde parou. O `transportada` é longo; rodar em segundo plano.

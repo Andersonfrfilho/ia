@@ -31,3 +31,7 @@ jq -s --arg dir "${PERSONAL_DIR:-$HOME/personal}" \
   "$settings" "$SOURCE_DIR/settings.base.json" "$SOURCE_DIR/settings.linux.json" > "$tmp"
 mv "$tmp" "$settings"
 echo "merged $settings"
+
+# Global gitignore versionado; vale para todos os repositórios desta máquina.
+git config --global core.excludesfile "$SOURCE_DIR/gitignore_global"
+echo "git core.excludesfile -> $SOURCE_DIR/gitignore_global"

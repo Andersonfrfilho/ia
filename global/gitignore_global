@@ -1,0 +1,34 @@
+# Global gitignore (versionado em ia/global). Vale para todo repositório da máquina.
+# Só o que é da máquina ou do ambiente de trabalho; regras de build/stack ficam no .gitignore de cada projeto.
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+*.Zone.Identifier
+
+# Editores
+.idea/
+*.swp
+*.swo
+*~
+
+# Segredos locais (os exemplos *.example continuam versionados)
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.*.local
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# Claude Code e OMC: estado local, nunca vai para o repositório
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
+.omc/

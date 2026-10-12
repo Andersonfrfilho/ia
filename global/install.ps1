@@ -27,6 +27,13 @@ $settingsPath = Join-Path $target 'settings.json'
 $cur = if (Test-Path $settingsPath) { Get-Content $settingsPath -Raw | ConvertFrom-Json -AsHashtable } else { @{} }
 $base = Get-Content (Join-Path $source 'settings.base.json') -Raw | ConvertFrom-Json -AsHashtable
 foreach ($k in $base.Keys) { $cur[$k] = $base[$k] }
-$cur['permissions'] = @{ additionalDirectories = @($personal) }
+$perm = if ($cur.ContainsKey('permissions')) { $cur['permissions'] } else { @{} }
+$perm['additionalDirectories'] = @($personal)
+$cur['permissions'] = $perm
 $cur | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding utf8
 Write-Host "merged $settingsPath"
+
+# Global gitignore versionado + fim de linha igual ao WSL (a pasta é compartilhada; CRLF quebra scripts .sh).
+git config --global core.excludesfile ((Join-Path $source 'gitignore_global') -replace '\\','/')
+git config --global core.autocrlf input
+Write-Host 'git core.excludesfile e core.autocrlf=input configurados'

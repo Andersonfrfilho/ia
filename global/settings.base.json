@@ -8,5 +8,25 @@
     "OLLAMA_MODE": "external",
     "OLLAMA_URL": "http://localhost:11434",
     "EMBEDDING_PROVIDER": "ollama"
+  },
+  "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.development)",
+      "Read(**/.env.staging)",
+      "Read(**/.env.production)",
+      "Read(**/.env.*.local)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*.p12)",
+      "Read(**/*.pfx)",
+      "Read(**/secrets/**)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.railway/**)",
+      "Read(~/.npmrc)"
+    ]
   }
 }

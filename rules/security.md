@@ -69,6 +69,13 @@ e `A03 Software Supply Chain Failures` passou a cobrir build e distribuição, n
 - CI roda auditoria de dependência e falha em vulnerabilidade alta/crítica sem exceção registrada.
 - Nada de instalar pacote por nome sugerido por I.A. sem conferir que existe e é o oficial
   (slopsquatting).
+- **Arquivos de segredo não vão para o git nem para o contexto da I.A.** Dois bloqueios versionados em `global/`:
+  `gitignore_global` (`core.excludesfile`: `.env*`, `*.pem`, `*.key`, `.claude/settings.local.json`, `.omc/`) e
+  `permissions.deny` em `settings.base.json` (`Read` de `.env*`, chaves, `secrets/`, `~/.ssh`, `~/.aws`,
+  `~/.config/gh`, `~/.npmrc`). O Claude Code não tem `.claudeignore`; `permissions.deny` é o mecanismo oficial.
+  `deny` de `Read` não cobre `cat`/`grep` no Bash: nunca rodar comando que imprima segredo.
+- `.env.example` é versionado e sem valor real. O `.gitignore` do projeto continua dono de build, cache e artefatos
+  da stack; o global cobre só o que é da máquina.
 
 ## 5. Banco de dados (Postgres + Drizzle)
 

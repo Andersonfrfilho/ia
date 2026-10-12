@@ -233,7 +233,10 @@ bash ~/.claude/rules/global/install.sh
 
 O script cria links em `~/.claude` e guarda o que já existia como `*.bak`.
 Editar em `~/.claude/...` edita o arquivo do repositório; é só commitar.
-`settings.json` **não** está aqui (pode conter segredos e caminhos da máquina).
+O `settings.json` final **não** é versionado (pode conter segredos e caminhos da máquina), mas o que é comum vem de
+`global/settings.base.json` (modelo, esforço, `env` do SocratiCode) e `global/settings.linux.json` (hook do RTK, só bash).
+O `install.sh` (Linux/WSL) e o `install.ps1` (Windows) mesclam esses arquivos no `settings.json` local e acrescentam
+o `additionalDirectories` da máquina. Rodar de novo é seguro.
 O `CLAUDE-omc.md` é gerado pelo `omc-setup`; se o plugin o regenerar, o link continua valendo.
 
 ## 13. Retomar no outro computador as branches de trabalho do `transportada`
@@ -270,3 +273,53 @@ outras sessões: conferir o número em `origin/staging` e rodar `db:generate` es
   `work/reconcile-spec-145`, `work/openapi`, `work/spec-150`, os `wip/spec-133` a `wip/spec-146` e os `salvo/stash-*`.
   Se algum for necessário no outro computador, enviar do Mac com `git push origin <branch>` primeiro.
 - Trabalho **não commitado** nunca viaja pelo git: conferir `git status` em cada worktree do Mac antes de trocar de máquina.
+
+## 14. Windows + WSL: um perfil só (regra)
+
+**Regra:** o Claude no Windows e o Claude no WSL (Ubuntu) são **um único ambiente lógico**. Nada pode existir só de um
+lado. Duplicar ou editar configuração direto num dos perfis (`C:\Users\<user>\.claude` ou `~/.claude` no Ubuntu) faz os
+dois se desalinharem, e o problema só aparece depois (ferramenta que funciona num lado e não no outro).
+
+1. **Fonte única:** este repositório (`ia`). Regras, `standards/`, `CLAUDE.md`, `hooks/` e os `settings.*.json` mudam
+   **só aqui**, por commit. Nunca editar `~/.claude/settings.json`, `CLAUDE.md` ou `rules/` à mão.
+2. **Uma pasta física:** no Ubuntu, `~/personal` é link para `C:\Users\<user>\Documentos\personal`. Existe **um** clone
+   do `ia`; não clonar uma segunda cópia dentro do WSL.
+3. **Depois de mudar o repositório**, rodar o instalador **dos dois lados**: `bash ~/personal/ia/global/install.sh`
+   (Ubuntu) e `pwsh -File <ia>\global\install.ps1` (Windows).
+4. **Mesma lista de plugins e ferramentas nos dois lados.** Instalou ou removeu plugin, MCP ou ferramenta de um lado?
+   Faça o mesmo no outro no mesmo momento. Conferir com `claude plugin list` nos dois.
+5. **Única diferença permitida:** o hook do RTK existe só no Linux (`settings.linux.json`), porque o `rtk` é um binário
+   Linux e o hook é bash. Qualquer outra diferença é bug.
+6. **Não se sincroniza (é por perfil):** login do `claude`, histórico, `plugins/` instalados, tokens (`gh`, `railway`,
+   MCPs). Refazer o login em cada lado; **nunca copiar token**.
+
+### 14.1 Instalação feita em 2026-10-12 (referência)
+
+| Item | Ubuntu (WSL) | Windows |
+|---|---|---|
+| Claude Code | `curl -fsSL https://claude.ai/install.sh \| bash`, PATH em `~/.local/bin` | `winget` (Anthropic.ClaudeCode) |
+| Node / Bun | nvm (Node LTS) + `curl -fsSL https://bun.sh/install \| bash` | `winget install OpenJS.NodeJS.LTS` e `Oven-sh.Bun` |
+| Railway CLI | `npm install -g @railway/cli` | `npm install -g @railway/cli` |
+| `rtk` | script oficial de `rtk-ai/rtk` em `~/.local/bin`; conferir com `rtk gain` | não usado (hook é bash) |
+| Ollama | usa o do Windows via `localhost` (rede espelhada) | `winget install Ollama.Ollama` + `ollama pull nomic-embed-text` |
+| Qdrant | usa o do Docker Desktop via `localhost:16333` | `docker run` da seção 11.4 |
+| OMC | `claude plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode` e `claude plugin install --scope user oh-my-claudecode` | idem |
+| SocratiCode | `claude plugin marketplace add giancarloerra/socraticode` e `claude plugin install --scope user socraticode@socraticode` | idem |
+
+### 14.2 Armadilhas encontradas
+
+- **Rede do WSL:** por padrão o Ubuntu não enxerga `localhost` do Windows. `C:\Users\<user>\.wslconfig` com
+  `[wsl2]` e `networkingMode=mirrored`, depois `wsl --shutdown`. Sem isso, Ollama e Qdrant ficam inalcançáveis do WSL.
+- **PATH fixo no `.zshrc`/`.bashrc`:** uma linha `export PATH="/home/...:..."` literal depois do nvm/bun apaga o Node, o
+  Bun e o `railway`. Usar sempre `export PATH="$HOME/.local/bin:$PATH"`.
+- **Plugin OMC sem Bun:** instalado com `bun` fora do PATH, o OMC não instala as dependências. Garantir Bun no PATH e
+  reinstalar o plugin.
+- **SocratiCode no Windows sem Node:** o MCP roda por `npx`; sem Node ele não carrega. Node é pré-requisito dos dois lados.
+- **`docker` no Ubuntu:** exige "WSL integration" ligada para a distro no Docker Desktop.
+- **Login por navegador:** `railway login` redireciona para `127.0.0.1` e pode mostrar "conexão recusada" no fim; o login
+  costuma concluir mesmo assim (conferir com `railway whoami`). Alternativa: `railway login --browserless`.
+  No `gh`, o fluxo de código de dispositivo funciona sem abrir navegador no WSL.
+- **Teclado:** se o Windows volta para o layout US, deixar só `pt-BR` ABNT2 na lista de idiomas e copiar as
+  configurações de região para a tela de boas-vindas.
+- **Abrir terminal no Ubuntu:** usar o Windows Terminal (perfil Ubuntu como padrão). Ao rodar `claude`, abrir a partir da
+  pasta do projeto, não da home.

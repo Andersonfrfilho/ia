@@ -1,0 +1,12 @@
+{
+  "theme": "dark",
+  "model": "opus",
+  "effortLevel": "low",
+  "env": {
+    "QDRANT_MODE": "external",
+    "QDRANT_PORT": "16333",
+    "OLLAMA_MODE": "external",
+    "OLLAMA_URL": "http://localhost:11434",
+    "EMBEDDING_PROVIDER": "ollama"
+  }
+}

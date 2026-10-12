@@ -1,0 +1,32 @@
+# Windows counterpart of install.sh: same shared files, no RTK hook (bash/Linux only).
+# Run from PowerShell:  pwsh -File .\global\install.ps1
+$ErrorActionPreference = 'Stop'
+$source = $PSScriptRoot
+$repo   = Split-Path $source -Parent
+$target = if ($env:CLAUDE_HOME) { $env:CLAUDE_HOME } else { Join-Path $env:USERPROFILE '.claude' }
+$personal = if ($env:PERSONAL_DIR) { $env:PERSONAL_DIR } else { Split-Path $repo -Parent }
+New-Item -ItemType Directory -Force $target | Out-Null
+
+function Set-Junction($name, $dest) {
+  $p = Join-Path $target $name
+  $item = Get-Item $p -Force -ErrorAction SilentlyContinue
+  if ($item -and $item.LinkType -ne 'Junction') { Move-Item $p "$p.bak" -Force }
+  elseif ($item) { $item.Delete() }
+  New-Item -ItemType Junction -Path $p -Target $dest | Out-Null
+  Write-Host "linked $p"
+}
+Set-Junction 'rules' $repo
+Set-Junction 'standards' (Join-Path $source 'standards')
+
+# CLAUDE.md only imports the shared file, so it never drifts from the repository.
+Set-Content (Join-Path $target 'CLAUDE.md') '@rules/global/CLAUDE.md' -Encoding utf8
+Copy-Item (Join-Path $source 'CLAUDE-omc.md') $target -Force
+Copy-Item (Join-Path $source 'RTK.md') $target -Force
+
+$settingsPath = Join-Path $target 'settings.json'
+$cur = if (Test-Path $settingsPath) { Get-Content $settingsPath -Raw | ConvertFrom-Json -AsHashtable } else { @{} }
+$base = Get-Content (Join-Path $source 'settings.base.json') -Raw | ConvertFrom-Json -AsHashtable
+foreach ($k in $base.Keys) { $cur[$k] = $base[$k] }
+$cur['permissions'] = @{ additionalDirectories = @($personal) }
+$cur | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding utf8
+Write-Host "merged $settingsPath"

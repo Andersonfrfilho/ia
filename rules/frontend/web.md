@@ -125,6 +125,13 @@ melhor.
   em telas diferentes é inconsistência, e é rejeitado em code review.
 - Ícone é decorativo quando acompanha rótulo: `aria-hidden="true"`, para o leitor de tela não
   anunciar duas vezes.
+- **Ícone ambíguo vira texto + dica.** Se uma pessoa razoável puder ler o ícone de duas maneiras
+  (a seta que "envia" ou "exporta"? o alerta que "erra" ou "atrasa"?), troque o ícone pela palavra
+  e ponha uma **dica** (`Tooltip` do design system, nunca o `title` nativo) que diga o que
+  acontece. Na dúvida entre símbolo e palavra, **vence a palavra**; o símbolo só reforça.
+- **Botão só de ícone leva dica**, com o mesmo texto do `aria-label`: quem não conhece o símbolo
+  descobre pelo hover e pelo foco do teclado.
+- **Estado nunca é só ícone, nem só cor**: é ícone + palavra + cor (§16).
 
 ## 10. Responsividade e PWA
 
@@ -316,3 +323,65 @@ Ao terminar, antes de declarar a tarefa pronta:
    é enviado ao usuário. Revisão feita só lendo o CSS não conta.
 4. **Divergência achada é consertada na mesma tarefa**, ou registrada como pendência explícita na
    resposta — nunca omitida.
+5. **A tela está amigável e didática?** Repassar o checklist do §16 (cinco segundos para entender o
+   estado e a próxima ação; menos texto sem perder o significado; cores com função; animação com
+   propósito; ícone ambíguo trocado por texto + dica). Achado vira correção na mesma tarefa.
+
+## 16. Tela amigável e didática — **OBRIGATÓRIO**
+
+Tela é feita para quem nunca a viu. O objetivo é que a pessoa entenda **o estado** e **a próxima
+ação** em cinco segundos, sem ler um parágrafo. Isto vale para toda tela nova e para toda tela
+tocada, e é revisado ao fim de cada tarefa (§15, item 5).
+
+### Menos escrita, sem perder o significado
+
+- **Uma ideia por bloco, em ordem de importância**: título curto → estado em destaque → ação
+  principal (uma só) → detalhe. Detalhe que quase ninguém precisa fica recolhido, não corrido.
+- **Palavra curta na frente, explicação na dica.** O rótulo diz o quê; a dica (`Tooltip`) diz o
+  porquê e o que acontece depois. Parágrafo de ajuda dentro do formulário é o último recurso.
+- **Símbolo reforça, não substitui** (§9): ícone ao lado do rótulo; ícone ambíguo vira texto + dica.
+- **Estado é sempre a tríade ícone + palavra + cor.** Só cor falha para daltônico (cerca de 8% dos
+  homens) e para impressão em preto e branco; só ícone falha para quem não o conhece.
+
+### Cores com teoria, não com gosto
+
+- **Cor tem função.** A paleta nasce dos tokens (§8) e cada cor responde a uma pergunta da tela:
+  *o que é neutro, o que é ação, o que é estado*. Cor de enfeite é ruído.
+- **Proporção 60-30-10.** Cerca de 60% neutro (fundo e superfície), 30% secundário (cartões,
+  cabeçalhos), 10% acento — e o acento é **só** para o que pede ação (botão primário, foco, item
+  ativo). Dois acentos competindo para a mesma ação confundem.
+- **Semântica fixa em todo o produto**: verde = concluído/sucesso, âmbar = atenção/espera,
+  vermelho = erro/risco, azul = informativo/ativo, cinza = inativo/cancelado. Nunca trocar o
+  significado de uma cor de uma tela para outra.
+- **Temperatura guia o olhar**: cores quentes chamam, frias acalmam. Quente e saturado para o que
+  exige ação; frio e dessaturado para o que só informa. Área grande nunca em cor saturada.
+- **Harmonia por relação, não por valor solto**: variações do mesmo matiz (monocromático), vizinhos
+  no círculo (análogas) ou opostos para contraste pontual (complementares) — sempre derivadas dos
+  tokens (`color-mix` sobre variável), nunca hexadecimal novo.
+- **Contraste mínimo WCAG AA**: 4,5:1 para texto, 3:1 para ícone, borda de campo e texto grande;
+  conferido no estado normal, no selecionado e **nos dois temas**. Tema escuro dessatura o acento
+  (cor vibrante sobre fundo escuro vibra e cansa).
+
+### Animação com propósito
+
+- **Anime só para dizer algo**: confirmar uma ação (o botão que vira "enviado"), mostrar o que mudou
+  (o selo que troca de estado), manter a continuidade espacial (o painel que abre de onde veio) ou
+  indicar espera (skeleton, spinner). Animação decorativa não entra.
+- **Curta e fora do caminho**: 120–200 ms para microinteração, 200–300 ms para painel e
+  transição de tela; entrada com `ease-out`, saída com `ease-in`; nunca bloqueia clique nem
+  foco; só `transform` e `opacity` (nada que force layout).
+- **Duração e curva são token** (`MOTION.fast`, `MOTION.base`, `MOTION.slow` e as curvas em
+  `theme/`), nunca milissegundo solto no CSS.
+- **Respeita `prefers-reduced-motion`**: quem pediu menos movimento recebe a troca de estado
+  instantânea (ou um fade), sem deslizar nem pulsar. Todo arquivo de estilo com `transition` ou
+  `animation` tem o bloco `@media (prefers-reduced-motion: reduce)`, e há contrato que varre isso.
+- **Nada em laço**, exceto indicador de carregamento. Selo que pulsa para sempre é alarme falso.
+
+### Checklist de aceite da tela
+
+- [ ] Quem nunca viu a tela entende o estado e a próxima ação em cinco segundos
+- [ ] Todo estado é ícone + palavra + cor; nenhum depende só de uma delas
+- [ ] Ícone ambíguo trocado por texto + dica; botão só de ícone tem dica e `aria-label`
+- [ ] Cores vêm dos tokens, com função clara, semântica fixa e contraste AA nos dois temas
+- [ ] Animação com propósito, curta, em token e com `prefers-reduced-motion`
+- [ ] Menos texto que antes, sem perder nenhuma informação que a pessoa precisa para decidir

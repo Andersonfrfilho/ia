@@ -306,6 +306,22 @@ dois se desalinharem, e o problema só aparece depois (ferramenta que funciona n
 | OMC | `claude plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode` e `claude plugin install --scope user oh-my-claudecode` | idem |
 | SocratiCode | `claude plugin marketplace add giancarloerra/socraticode` e `claude plugin install --scope user socraticode@socraticode` | idem |
 
+### 14.1b Onde fica o worktree de trabalho (regra, 2026-10-16)
+
+O repositório principal de cada projeto fica **no Windows** (`C:\Users\<user>\Documentos\personal\<projeto>`), um só.
+Os **worktrees** de trabalho seguem o lado que vai usá-los:
+
+| Quem trabalha | Onde fica o worktree | Por quê |
+| --- | --- | --- |
+| Claude no **Ubuntu (WSL)** | `~/<projeto>-wt/<nome>` (disco do Linux) | ler `/mnt/c` pelo WSL passa por uma ponte 9P: Bun e testes ficam 5–10× mais lentos |
+| Claude no **PowerShell** | `C:\...\<projeto>-wt\<nome>` | o Bun do Windows lê o `C:` direto, sem ponte |
+
+- O worktree no Linux nasce do repositório do Windows (`git worktree add ~/<projeto>-wt/<nome> -b <branch> origin/staging`),
+  com `.env`/`.env.test` como link para os arquivos do Windows. O trabalho volta pelo git (push/PR); o Windows vê com `git fetch`.
+- **Nunca usar o mesmo worktree pelos dois lados**: o `node_modules` instalado no Linux não serve no Windows e vice-versa.
+- Medido em 2026-10-16 (transportada): no Linux, 3250 testes do painel em 2 s e o `tsc` da API em 40 s; em `/mnt/c` a mesma
+  suíte estourava o tempo limite e as integrações levavam horas.
+
 ### 14.2 Armadilhas encontradas
 
 - **Rede do WSL:** por padrão o Ubuntu não enxerga `localhost` do Windows. `C:\Users\<user>\.wslconfig` com

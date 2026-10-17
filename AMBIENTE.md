@@ -282,10 +282,11 @@ dois se desalinharem, e o problema só aparece depois (ferramenta que funciona n
 
 1. **Fonte única:** este repositório (`ia`). Regras, `standards/`, `CLAUDE.md`, `hooks/` e os `settings.*.json` mudam
    **só aqui**, por commit. Nunca editar `~/.claude/settings.json`, `CLAUDE.md` ou `rules/` à mão.
-2. **Uma pasta física:** no Ubuntu, `~/personal` é link para `C:\Users\<user>\Documentos\personal`. Existe **um** clone
-   do `ia`; não clonar uma segunda cópia dentro do WSL.
+2. **Uma pasta física, no Linux** (desde 2026-10-17, ver §14.1b): `~/personal` é pasta real no disco do Ubuntu.
+   O Windows enxerga por `\\wsl.localhost\Ubuntu\home\miyazaki\personal`. Existe **um** clone do `ia`; não clonar outro.
 3. **Depois de mudar o repositório**, rodar o instalador **dos dois lados**: `bash ~/personal/ia/global/install.sh`
-   (Ubuntu) e `pwsh -File <ia>\global\install.ps1` (Windows).
+   (Ubuntu) e, num PowerShell **como administrador** (symlink para UNC exige elevação),
+   `pwsh -File \\wsl.localhost\Ubuntu\home\miyazaki\personal\ia\global\install.ps1`.
 4. **Mesma lista de plugins e ferramentas nos dois lados.** Instalou ou removeu plugin, MCP ou ferramenta de um lado?
    Faça o mesmo no outro no mesmo momento. Conferir com `claude plugin list` nos dois.
 5. **Única diferença permitida:** o hook do RTK existe só no Linux (`settings.linux.json`), porque o `rtk` é um binário
@@ -306,19 +307,18 @@ dois se desalinharem, e o problema só aparece depois (ferramenta que funciona n
 | OMC | `claude plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode` e `claude plugin install --scope user oh-my-claudecode` | idem |
 | SocratiCode | `claude plugin marketplace add giancarloerra/socraticode` e `claude plugin install --scope user socraticode@socraticode` | idem |
 
-### 14.1b Onde fica o worktree de trabalho (regra, 2026-10-16)
+### 14.1b Projetos moram no Linux (regra, 2026-10-17)
 
-O repositório principal de cada projeto fica **no Windows** (`C:\Users\<user>\Documentos\personal\<projeto>`), um só.
-Os **worktrees** de trabalho seguem o lado que vai usá-los:
+O Claude roda só no Ubuntu; o do PowerShell não é usado. Por isso, em 2026-10-17, **todos os projetos foram movidos para
+o disco do Linux** (`~/personal/<projeto>`), e os worktrees para `~/personal/<projeto>-wt/` ou `~/<projeto>-wt/`.
 
-| Quem trabalha | Onde fica o worktree | Por quê |
-| --- | --- | --- |
-| Claude no **Ubuntu (WSL)** | `~/<projeto>-wt/<nome>` (disco do Linux) | ler `/mnt/c` pelo WSL passa por uma ponte 9P: Bun e testes ficam 5–10× mais lentos |
-| Claude no **PowerShell** | `C:\...\<projeto>-wt\<nome>` | o Bun do Windows lê o `C:` direto, sem ponte |
-
-- O worktree no Linux nasce do repositório do Windows (`git worktree add ~/<projeto>-wt/<nome> -b <branch> origin/staging`),
-  com `.env`/`.env.test` como link para os arquivos do Windows. O trabalho volta pelo git (push/PR); o Windows vê com `git fetch`.
-- **Nunca usar o mesmo worktree pelos dois lados**: o `node_modules` instalado no Linux não serve no Windows e vice-versa.
+- **Exceção: projetos Unreal** (`Battle-Square` e qualquer `*.uproject`) ficam em `C:\Users\<user>\Documentos\personal\`.
+  O Unreal Editor e o build (Visual Studio/UBT) são Windows e quebram via `\\wsl.localhost`. O Claude os lê por `/mnt/c/...`.
+- A cópia antiga em `C:\Users\<user>\Documentos\personal\` ficou como **backup** da migração. Não trabalhar nela; apagar
+  depois de validar (cada projeto com `bun install` e testes passando no Linux).
+- `.env`/`.env.test` dos worktrees são links para os arquivos do repositório principal, já no Linux.
+- O disco do WSL (`.vhdx`) **não tem backup** do Windows/OneDrive: o backup é o git. Dar push com frequência; `.env` guardado fora.
+- Projeto novo: `git clone` direto em `~/personal/`, nunca em `/mnt/c`.
 - Medido em 2026-10-16 (transportada): no Linux, 3250 testes do painel em 2 s e o `tsc` da API em 40 s; em `/mnt/c` a mesma
   suíte estourava o tempo limite e as integrações levavam horas.
 
@@ -347,7 +347,7 @@ Resultado: `quickcart` 2.576 chunks, `ativada` 8.959, `financing-chatbot` 10.714
 
 - **O índice é chaveado pelo caminho resolvido.** No Ubuntu, `~/personal` é link para `/mnt/c/Users/<user>/Documentos/personal`,
   e o índice usa o caminho `/mnt/c/...`. Abrir o mesmo projeto por `~/personal/<projeto>` ou por `C:\...` não encontra o
-  índice e cria outro (duplicado no Qdrant). **Regra:** indexar e consultar sempre pelo caminho `/mnt/c/...` no Ubuntu.
+  índice e cria outro (duplicado no Qdrant). **Regra (desde 2026-10-17):** indexar e consultar pelo caminho `/home/miyazaki/personal/...`; os índices antigos em `/mnt/c/...` são órfãos e saem com `codebase_remove`.
 - **`QDRANT_URL` é obrigatório** em `QDRANT_MODE=external` (só `QDRANT_PORT` não basta). Está em `global/settings.base.json`.
 - **Não indexar com `claude -p`.** O indexador roda dentro do servidor MCP e morre quando a sessão termina; o `sleep` no
   Bash é bloqueado e a sessão curta deixa o índice incompleto (o `financing-chatbot` parou em 720 chunks após 8 tentativas).

@@ -12,7 +12,9 @@ function Set-Junction($name, $dest) {
   $item = Get-Item $p -Force -ErrorAction SilentlyContinue
   if ($item -and $item.LinkType -ne 'Junction') { Move-Item $p "$p.bak" -Force }
   elseif ($item) { $item.Delete() }
-  New-Item -ItemType Junction -Path $p -Target $dest | Out-Null
+  # Junctions cannot target UNC paths (repo living inside WSL); those need a symbolic link.
+  $type = if ($dest.StartsWith('\\')) { 'SymbolicLink' } else { 'Junction' }
+  New-Item -ItemType $type -Path $p -Target $dest | Out-Null
   Write-Host "linked $p"
 }
 Set-Junction 'rules' $repo

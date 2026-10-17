@@ -306,6 +306,7 @@ dois se desalinharem, e o problema só aparece depois (ferramenta que funciona n
 | Qdrant | usa o do Docker Desktop via `localhost:16333` | `docker run` da seção 11.4 |
 | OMC | `claude plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode` e `claude plugin install --scope user oh-my-claudecode` | idem |
 | SocratiCode | `claude plugin marketplace add giancarloerra/socraticode` e `claude plugin install --scope user socraticode@socraticode` | idem |
+| Graphify (2026-10-17) | `python3 -m venv ~/.local/share/graphify && ~/.local/share/graphify/bin/pip install graphifyy` (dois "y"; oficial é graphify.com), link em `~/.local/bin/graphify`, depois `graphify install --platform claude` e `git checkout global/CLAUDE.md` no `ia` (o instalador grava caminho da máquina e apaga o import do OMC) | não usado |
 
 ### 14.1b Projetos moram no Linux (regra, 2026-10-17)
 

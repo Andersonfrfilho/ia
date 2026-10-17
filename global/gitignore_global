@@ -32,3 +32,6 @@ id_ed25519
 .claude/worktrees/
 CLAUDE.local.md
 .omc/
+
+# Grafo gerado pelo graphify (refeito com `graphify update .`)
+graphify-out/

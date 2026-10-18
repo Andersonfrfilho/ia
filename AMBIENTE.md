@@ -101,7 +101,7 @@ Em `~/.claude/`:
 - `CLAUDE.md`: importa `RTK.md`, `standards/*` e o `CLAUDE-omc.md`.
 - `standards/`: código, TypeScript, React, Node, APIs.
 - `rules/rules/`: arquitetura (`code-standart.md`), `security.md`, `model-economy.md`, `omc-sessions.md`,
-  `railway-projects.md`, `whatsapp-cloud-api.md`, `conversation-flow.md`, e pastas `backend/`, `frontend/`,
+  `railway-projects.md`, `whatsapp-cloud-api.md`, `conversation-flow.md`, `email-templates.md`, e pastas `backend/`, `frontend/`,
   `infrastructure/`, `packages/`.
 - `hooks/rtk-rewrite.sh`: reescreve comandos de shell para `rtk` (transparente).
 - `commands/fiscal-provider.md` e a skill `fiscal-provider`.

@@ -311,7 +311,7 @@ dois se desalinharem, e o problema só aparece depois (ferramenta que funciona n
 ### 14.1b Projetos moram no Linux (regra, 2026-10-17)
 
 O Claude roda só no Ubuntu; o do PowerShell não é usado. Por isso, em 2026-10-17, **todos os projetos foram movidos para
-o disco do Linux** (`~/personal/<projeto>`), e os worktrees para `~/personal/<projeto>-wt/` ou `~/<projeto>-wt/`.
+o disco do Linux** (`~/personal/<projeto>`), e os worktrees para `~/personal/<projeto>-wt/` (único caminho; nunca `~/<projeto>-wt/` nem projeto direto em `~`).
 
 - **Exceção: projetos Unreal** (`Battle-Square` e qualquer `*.uproject`) ficam em `C:\Users\<user>\Documentos\personal\`.
   O Unreal Editor e o build (Visual Studio/UBT) são Windows e quebram via `\\wsl.localhost`. O Claude os lê por `/mnt/c/...`.

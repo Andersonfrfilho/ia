@@ -361,3 +361,23 @@ node ~/personal/ia/global/tools/socraticode-index.mjs /mnt/c/Users/ander/Documen
 ```
 
   Retoma de onde parou. O `transportada` é longo; rodar em segundo plano.
+
+## 15. Arch Linux nativo no Predator (desde 2026-10-18)
+
+O Windows saiu (tela azul `0x116` do driver NVIDIA) e o notebook passa a rodar Arch Linux puro
+(KDE, Btrfs, `nvidia-open`, kernel `linux` + `linux-lts`). O Battle-Square (Unreal) foi arquivado no GitHub;
+o jogo segue em TypeScript no `battlada`.
+
+1. Instalar com `archinstall`: Secure Boot desligado, Intel VMD/RST em AHCI, perfil KDE, driver NVIDIA open.
+2. Restaurar do cartão (`backup-pre-linux/`): `segredos-env-ssh.tgz` e `claude-docs.tgz` na home;
+   `chmod 600 ~/.ssh/id_*`; `gh auth login`.
+3. `git clone git@github.com:Andersonfrfilho/ia.git ~/personal/ia && bash ~/personal/ia/global/setup-arch.sh`
+4. Reiniciar; conferir `nvidia-smi`, `docker ps`, `rtk gain`, `codebase_health` e o Habblaud em http://localhost:4747.
+5. Devolver cada `.env` e `.omc/` do backup ao projeto; `codebase_index` em cada projeto (o índice não viaja).
+
+O script instala: drivers NVIDIA + CUDA, Docker com GPU, Ollama (CUDA), snapper, Steam/GameMode/MangoHud,
+Blender/Krita/OBS, Node (nvm), Bun, Claude Code, rtk, Railway, graphify, plugins OMC e SocratiCode,
+Qdrant na 16333, os repositórios e o **Habblaud** (`npm run docker:up` + `npm run mod:install`).
+PredatorSense não existe no Linux: ventoinhas, turbo e RGB ficam com o `linuwu-sense-dkms` (AUR).
+Branches que só existiam na máquina estão no GitHub com prefixo `local-backup/` (transportada) e
+`wip/pre-linux-2026-10-18` (ativada, battlada).

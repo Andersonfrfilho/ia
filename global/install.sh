@@ -26,7 +26,7 @@ echo "linked $target"
 settings="$TARGET_DIR/settings.json"
 [ -f "$settings" ] || echo '{}' > "$settings"
 tmp="$(mktemp)"
-jq -s --arg dir "${PERSONAL_DIR:-$HOME/personal}" \
+jq -s --arg dir "${PERSONAL_DIR:-$HOME/Documents/personal}" \
   '.[0] * .[1] * .[2] * {permissions: {additionalDirectories: [$dir]}}' \
   "$settings" "$SOURCE_DIR/settings.base.json" "$SOURCE_DIR/settings.linux.json" > "$tmp"
 mv "$tmp" "$settings"

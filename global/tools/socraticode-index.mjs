@@ -1,6 +1,6 @@
 // Indexa projetos no SocratiCode falando direto com o servidor MCP, com espera de verdade.
 // Uso (no Ubuntu, Node no PATH):  node socraticode-index.mjs <pasta-base> <projeto> [<projeto>...]
-// Ex.:  node socraticode-index.mjs /mnt/c/Users/ander/Documentos/personal quickcart transportada
+// Ex.:  node socraticode-index.mjs ~/Documents/personal quickcart transportada
 // Lê o bloco env de ~/.claude/settings.json (QDRANT_URL etc.). Retoma de onde parou se já houver índice.
 import { spawn } from 'node:child_process';
 import readline from 'node:readline';

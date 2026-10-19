@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Post-install for Arch Linux on the Acer Predator Helios (RTX 5070 Laptop, Intel hybrid graphics).
-# Run as the normal user after archinstall (KDE + nvidia-open): bash ~/personal/ia/global/setup-arch.sh
+# Run as the normal user after archinstall (KDE + nvidia-open): bash ~/Documents/personal/ia/global/setup-arch.sh
 # Safe to run again: every step skips what is already in place.
 set -euo pipefail
 
-PERSONAL_DIR="${PERSONAL_DIR:-$HOME/personal}"
+PERSONAL_DIR="${PERSONAL_DIR:-$HOME/Documents/personal}"
 GITHUB_USER="Andersonfrfilho"
 OWN_REPOSITORIES=(ia transportada ativada battlada ada-technology adatechnology-packages financing-chatbot
   quickcart sakura-bot-oficial supermercado-noemia comandada comandada-docs)
@@ -90,7 +90,7 @@ export BUN_INSTALL="$HOME/.bun"
 export PATH="$HOME/.local/bin:$BUN_INSTALL/bin:$PATH"
 alias ll='ls -lah'
 alias gs='git status -sb'
-alias p='cd ~/personal'
+alias p='cd ~/Documents/personal'
 alias claude='claude --dangerously-skip-permissions --chrome'
 EOF
   [ "$SHELL" = "$(command -v zsh)" ] || chsh -s "$(command -v zsh)"

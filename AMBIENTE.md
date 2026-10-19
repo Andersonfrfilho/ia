@@ -357,7 +357,7 @@ Resultado: `quickcart` 2.576 chunks, `ativada` 8.959, `financing-chatbot` 10.714
 - **Use o script** `global/tools/socraticode-index.mjs`, que fala direto com o MCP e espera até terminar:
 
 ```bash
-node ~/personal/ia/global/tools/socraticode-index.mjs /mnt/c/Users/ander/Documentos/personal quickcart transportada
+node ~/Documents/personal/ia/global/tools/socraticode-index.mjs ~/Documents/personal quickcart transportada
 ```
 
   Retoma de onde parou. O `transportada` é longo; rodar em segundo plano.
@@ -371,9 +371,10 @@ o jogo segue em TypeScript no `battlada`.
 1. Instalar com `archinstall`: Secure Boot desligado, Intel VMD/RST em AHCI, perfil KDE, driver NVIDIA open.
 2. Restaurar do cartão (`backup-pre-linux/`): `segredos-env-ssh.tgz` e `claude-docs.tgz` na home;
    `chmod 600 ~/.ssh/id_*`; `gh auth login`.
-3. `git clone git@github.com:Andersonfrfilho/ia.git ~/personal/ia && bash ~/personal/ia/global/setup-arch.sh`
+3. `git clone git@github.com:Andersonfrfilho/ia.git ~/Documents/personal/ia && bash ~/Documents/personal/ia/global/setup-arch.sh`
 4. Reiniciar; conferir `nvidia-smi`, `docker ps`, `rtk gain`, `codebase_health` e o Habblaud em http://localhost:4747.
 5. Devolver cada `.env` e `.omc/` do backup ao projeto; `codebase_index` em cada projeto (o índice não viaja).
+**Projetos no Arch (regra, 2026-10-18):** todos os repositórios e worktrees ficam em `~/Documents/personal/` (`<projeto>-wt/` para worktrees). Isso substitui o `~/personal` da época do WSL (§14.1b); `additionalDirectories` e os links de `~/.claude` apontam para lá (`PERSONAL_DIR` do `install.sh`).
 
 O script instala: drivers NVIDIA + CUDA, Docker com GPU, Ollama (CUDA), snapper, Steam/GameMode/MangoHud,
 Blender/Krita/OBS, Node (nvm), Bun, Claude Code, rtk, Railway, graphify, plugins OMC e SocratiCode,

@@ -64,7 +64,13 @@ install_developer_tools() {
   command -v bun >/dev/null || curl -fsSL https://bun.sh/install | bash
   command -v claude >/dev/null || curl -fsSL https://claude.ai/install.sh | bash
   command -v rtk >/dev/null || curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | bash
-  command -v railway >/dev/null || npm install -g @railway/cli
+  command -v railway >/dev/null || npm install -g --allow-scripts=@railway/cli @railway/cli
+  # skill use-railway e MCP do Railway ficam fora do repositório; exigem login interativo antes
+  if railway whoami >/dev/null 2>&1; then
+    railway setup agent
+  else
+    log "Railway sem login: rode 'railway login' e depois 'railway setup agent'"
+  fi
   if [ ! -x "$HOME/.local/bin/graphify" ]; then
     python -m venv "$HOME/.local/share/graphify"
     "$HOME/.local/share/graphify/bin/pip" install graphifyy

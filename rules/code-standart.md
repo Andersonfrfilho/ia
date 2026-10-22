@@ -33,6 +33,9 @@ Sufixo de papel na extensão: `*.use-case.ts`, `*.service.ts`, `*.controller.ts`
 - Env centralizado em `envs/`: `env.dev`, `env.dev.local`, `env.test`, `env.test.e2e`.
 - `Makefile` na raiz abstrai os comandos. Declara `PROJECT_NAME` lido do env do ambiente e
   propaga para todo recurso: `$(PROJECT_NAME)-$(ENV)-<recurso>`. Nome fixo sem prefixo é proibido.
+- **Todo `docker compose` sobe com `-p <nome do projeto>`** (`up`, `down`, `logs`, `restart`), inclusive
+  stack que já existe: sem `-p`, o nome vem da pasta e duas stacks colidem ou viram órfãs.
+  Stack antiga sem `-p`: `down` (preservando volumes) e subir de novo com `-p`.
 
 ## 5. Seeders
 

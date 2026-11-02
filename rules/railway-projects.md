@@ -18,6 +18,27 @@ padrão abaixo simplesmente não aparece, ou aparece sem proteção.
    Enquanto a spec 001 não estiver implantada, adicionar o projeto na tabela de inventário
    (`spec.md` §3) da spec.
 
+## Projeto que usa bucket Railway — OBRIGATÓRIO
+
+Registrada em 2026-11-01, no `financing-chatbot`: produção usava o bucket de staging com credenciais copiadas à
+mão, e as URLs assinadas passaram a responder 403 `SignatureDoesNotMatch` nos dois ambientes.
+
+1. **Um bucket por ambiente.** Produção nunca aponta para o bucket de staging, nem o contrário: compartilhar mistura
+   dado de cliente com dado de teste, e rotacionar a chave de um ambiente derruba o outro.
+2. **Credenciais só por referência ao bucket** (`ACCESS_KEY_ID`, `SECRET_ACCESS_KEY`, `BUCKET`, `ENDPOINT`, `REGION`
+   como `${{<bucket>.VARIAVEL}}`). Proibido colar o valor: a cópia não acompanha a recriação das credenciais.
+3. **Desligar e religar nunca mexe em variável nem em credencial**: só `deploymentStop` e `deploymentRestart`.
+   Religar por redeploy sobe o código da branch ligada ao serviço, não o que estava rodando.
+4. **O serviço fica ligado à branch do seu ambiente** (staging na `staging`). Mudar variável dispara deploy a partir
+   dela: ligado à `main`, o staging volta para o código de produção sem nenhum aviso.
+5. **Trocar o bucket de um ambiente em uso é migração, nesta ordem:** criar o bucket, aplicar o CORS, copiar os
+   objetos com as mesmas chaves e `content-type`, conferir, e só então trocar as variáveis. Trocar antes deixa os
+   arquivos existentes em 404 até o fim da cópia. Nada é apagado da origem na migração.
+6. **Depois de todo deploy e religamento, conferir um objeto real** por URL assinada (o logo serve) e exigir 200.
+   Credencial errada não derruba o boot nem o health check: o deploy fica verde com os arquivos quebrados.
+
+Nunca imprimir credencial para comparar: comparar por hash.
+
 ## Fora do Railway
 
 Projeto hospedado em outro lugar (Vercel, AWS, VPS) não entra no painel. **Parar e perguntar** antes de

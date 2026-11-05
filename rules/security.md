@@ -80,8 +80,9 @@ e `A03 Software Supply Chain Failures` passou a cobrir build e distribuição, n
 ## 5. Banco de dados (Postgres + Drizzle)
 
 - Query parametrizada sempre; `sql.raw()` só com valor que nunca vem do usuário, e comentado.
-- Campo sensível em repouso (CPF, data de nascimento, renda) criptografado com chave de aplicação
-  separada da chave do banco.
+- **Não criptografar campo na aplicação** (decidido pelo dono em 2026-11-05: perder a chave de aplicação é
+  perder o dado). Dado pessoal em coluna fica legível no banco; a proteção é banco sem exposição pública,
+  acesso mínimo, nenhum PII em log e nenhum dump fora do ambiente. Não propor envelope/cifra de coluna.
 - Banco sem exposição pública; acesso só pela rede interna.
 - Migration é aditiva por padrão; `DROP`/`NOT NULL` retroativo exige plano de rollback escrito.
 - Backup criptografado **antes** do upload para o bucket, com a chave fora do bucket.

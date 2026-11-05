@@ -80,14 +80,16 @@ e `A03 Software Supply Chain Failures` passou a cobrir build e distribuição, n
 ## 5. Banco de dados (Postgres + Drizzle)
 
 - Query parametrizada sempre; `sql.raw()` só com valor que nunca vem do usuário, e comentado.
-- **Não criptografar campo na aplicação** (decidido pelo dono em 2026-11-05: perder a chave de aplicação é
-  perder o dado). Dado pessoal em coluna fica legível no banco; a proteção é banco sem exposição pública,
-  acesso mínimo, nenhum PII em log e nenhum dump fora do ambiente. Não propor envelope/cifra de coluna.
+- **Criptografia: só o que já é criptografado hoje, nada além** (decidido pelo dono em 2026-11-05).
+  Segue cifrado: credenciais de integração (certificado A1 e senha, NFS-e, e-mail, tokens de WhatsApp/Evolution,
+  webhook, feriados), o documento do recebedor no comprovante e o backup. **Nada além disso se criptografa** —
+  nem campo de cadastro (CPF, CNH, endereço, nascimento), nem dado novo: perder a chave é perder o dado. Não
+  propor envelope/cifra de coluna; a proteção do resto é banco sem exposição pública, acesso mínimo e nenhum PII
+  em log.
 - Banco sem exposição pública; acesso só pela rede interna.
 - Migration é aditiva por padrão; `DROP`/`NOT NULL` retroativo exige plano de rollback escrito.
-- **Backup sem criptografia da aplicação** (decidido pelo dono em 2026-11-05, mesma regra dos campos: chave
-  perdida é dado perdido). A proteção do backup é o bucket: privado, credencial própria do backup (separada da da
-  aplicação), sem URL pública e sem cópia fora do ambiente.
+- Backup criptografado **antes** do upload para o bucket, com a chave fora do bucket (como já é hoje). A chave fica
+  guardada em **dois lugares** no mínimo (cofre de senhas + cópia offline), nunca só numa variável.
 - **Teste de restauração mensal** de um backup real num banco descartável, com o resultado registrado no runbook.
   Backup que nunca foi restaurado não conta como backup.
 

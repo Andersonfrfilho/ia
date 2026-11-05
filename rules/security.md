@@ -85,7 +85,12 @@ e `A03 Software Supply Chain Failures` passou a cobrir build e distribuição, n
   acesso mínimo, nenhum PII em log e nenhum dump fora do ambiente. Não propor envelope/cifra de coluna.
 - Banco sem exposição pública; acesso só pela rede interna.
 - Migration é aditiva por padrão; `DROP`/`NOT NULL` retroativo exige plano de rollback escrito.
-- Backup criptografado **antes** do upload para o bucket, com a chave fora do bucket.
+- Backup criptografado **antes** do upload para o bucket, com a chave fora do bucket (decidido em 2026-11-05:
+  o backup é a cópia inteira do banco que sai do ambiente; perder a chave só inutiliza backups antigos, o banco
+  segue vivo). Para não perder a chave:
+  - a chave fica guardada em **dois lugares** no mínimo (cofre de senhas + cópia offline), nunca só numa variável;
+  - **teste de restauração mensal** de um backup real num banco descartável, com o resultado registrado no runbook.
+    Backup que nunca foi restaurado não conta como backup.
 
 ## 6. Filas (BullMQ + Redis)
 

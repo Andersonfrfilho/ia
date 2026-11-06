@@ -54,6 +54,9 @@ modelo da sessão atual com o recomendado no documento. Se divergirem:
 - A I.A. nunca assume a troca como feita — aguarda confirmação do usuário.
 - Exceção: se o usuário disser explicitamente para seguir com o modelo atual,
   registrar isso e continuar sem repetir a pergunta na mesma fase.
+- Execução sem supervisão (madrugada, autopilot/ralph sem o usuário presente): a parada vira
+  delegação — a fase vai para subagente `executor` com `model=<modelo da fase>`, sem pedir `/model`.
+  Regra completa em `global/CLAUDE.md` (Trabalho sem supervisão).
 
 ## 3. Guard-rails obrigatórios com modelo barato
 

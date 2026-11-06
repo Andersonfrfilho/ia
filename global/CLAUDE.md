@@ -46,6 +46,24 @@ Um clique custa 61 tokens e um `read_page` inteiro custa 600.
 - Usar só a stack `Claude_Browser`; `claude-in-chrome` apenas quando a tarefa
   exigir sessão logada do Chrome real.
 
+# Trabalho sem supervisão (madrugada)
+
+Sessão que encerra o turno esperando um aviso de tarefa em segundo plano fica parada se o aviso
+se perde (2026-11-06: testes do PR #201 terminaram às 05:20 e a sessão nunca voltou).
+
+- Nunca encerrar o turno com item pendente no task list só porque algo roda em segundo plano.
+- Esperar trabalho em segundo plano dentro do shell (`until`/`Monitor`), com prazo; nunca
+  "vou avisar quando terminar". Espera no shell não chama o modelo: custa zero token.
+- Despertador de reserva (`ScheduleWakeup`) de 20–30 min; proibido checar de minuto em minuto.
+- Mesmo passo falhou 2x pelo mesmo motivo: registrar o bloqueio e seguir para o próximo item.
+- No máximo 2 sessões pesadas (build, testes de navegador/GPU) ao mesmo tempo: com a máquina
+  sobrecarregada os testes saem inúteis e o trabalho é refeito.
+- Modelo da fase diferente do da sessão: não parar pedindo `/model` (§2 do `model-economy.md`).
+  Delegar a fase a um subagente `executor` com `model=<modelo da fase>`; a sessão principal só
+  coordena, confere os gates e registra. Task 🧠 que exige `opus` e não pode ser delegada:
+  registrar como pendente e seguir.
+- Ao fim: resumo do que terminou, do que ficou bloqueado e por quê.
+
 # graphify
 - **graphify** (`~/.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
 When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
